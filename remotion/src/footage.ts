@@ -13,6 +13,10 @@ export const FOOTAGE: Record<string, string | null> = {
   st3: null, st3_rewind: null,
   st4: null, st4_rewind: null,
   st5: null, st5_rewind: null,
+  // خلفيات المحطات ونتائج الأخطاء (لقطات حقيقية)
+  bg_st2: 'real_bg_st2.mp4', // الطالبة نفسها في المختبر (#21461)
+  glass: 'real_glass.mp4',   // زجاج يسقط وينكسر على الأرض (#28860)
+  coffee: 'real_coffee.mp4', // كوب قهوة (#236)
   ending: 'real_ending.mp4',   // تنظر من المجهر ثم تبتسم (Mixkit #21459)
   // لقطات حقيقية للتصرف الآمن تظهر بعد كل قرار صحيح.
   // كل اللقطات الحقيقية للممثلة نفسها (سلسلة Mixkit 21452–21461) لتكون «سلمى» شخصية واحدة.

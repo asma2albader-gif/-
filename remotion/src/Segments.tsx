@@ -2,11 +2,12 @@
 // The app pauses between segments and shows real, clickable choices to the student.
 import React from 'react';
 import {AbsoluteFill, Series, useCurrentFrame, useVideoConfig} from 'remotion';
-import {CONSEQUENCES, ST, stationTimes} from './data';
-import {hazard, stationBg} from './art';
+import {CONSEQUENCES, REAL, ST, stationTimes} from './data';
+import {hazard} from './art';
 import {BG, CSS, Cues, Footage, Svg, hasFootage} from './components';
 import {DUR, Intro, Mission, Outro, Reveal} from './Scenes';
-import {PageRestore, buildActors} from './Station';
+import {PageRestore} from './Station';
+import {EvidenceCard, RealScene} from './Real';
 import {K, V, ar, back, easeOut, fadeUp, lin} from './lib';
 
 export const FPS = 30;
@@ -47,17 +48,9 @@ export const StationSeg: React.FC<StationSegProps> = ({si, seg, found, zoom, cho
   const s = ST[si];
   const T = stationTimes(s);
   const {R, D} = T;
-  const live = hasFootage(`st${s.n}`), liveRew = hasFootage(`st${s.n}_rewind`);
 
-  // virtual station time -> drives the illustrated actors exactly like the linear video
-  let vt = 3.6;
-  if (seg === 'intro') vt = t;
-  if (seg === 'rewind') vt = R + t;
-  const st1Spill = seg === 'wrong' && si === 0 && choice === 0;
-  if (st1Spill) vt = T.W + t;            // station 1 has a full animated consequence
+
   const inR = seg === 'rewind';
-  const actors = buildActors(si, vt, T);
-
   const ph = seg === 'intro' ? 0 : seg === 'rewind' ? 1 : 2;
   const sec = t < 1 ? Math.max(0, 12 - t * 12) : Math.min(9, (t - 1) * 2.6 + 3.5);
   const tc = `00:00:${String(Math.floor(sec)).padStart(2, '0')}:${String(Math.floor((sec % 1) * 30)).padStart(2, '0')}`;
@@ -66,7 +59,7 @@ export const StationSeg: React.FC<StationSegProps> = ({si, seg, found, zoom, cho
   const cues: Array<[number, string]> =
     seg === 'intro' ? [[0.1, 'whoosh'], [0.5, 'boom'], [3.0, 'swish']]
     : seg === 'rewind' ? [[0, 'rewind'], [1.0, 'tick'], [3.3, 'pause']]
-    : seg === 'wrong' ? [[0, 'wrong'], ...(st1Spill ? [[1.0, 'splash'] as [number, string]] : [])]
+    : seg === 'wrong' ? [[0, 'wrong'], ...(REAL[si].wrong ? [[0.6, 'splash'] as [number, string]] : [])]
     : [[0, 'success'], [RIGHT_P, 'page'], [RIGHT_P + 0.6, 'type'], [RIGHT_P + 3.1, 'swish'], [RIGHT_P + 3.5, 'chime']];
 
   return (
@@ -75,9 +68,12 @@ export const StationSeg: React.FC<StationSegProps> = ({si, seg, found, zoom, cho
         <Cues cues={cues} />
         {/* the scene */}
         <AbsoluteFill style={{filter: inR ? 'sepia(.55) saturate(.85) contrast(1.08)' : 'none', transform: inR && t < 1 ? `translateX(${Math.sin(t * 90) * 6}px)` : 'none'}}>
-          {!(inR ? liveRew : live) && <><Svg html={stationBg(s.n)} />{actors}</>}
-          {!inR && live && <Footage k={`st${s.n}`} from={0} />}
-          {inR && liveRew && <Footage k={`st${s.n}_rewind`} from={0} />}
+          {/* real footage of the same student; no illustrations */}
+          {seg === 'intro' && <RealScene si={si} mode="bg" from={2.6} />}
+          {seg === 'rewind' && <RealScene si={si} mode="rew" from={0} />}
+          {seg === 'wrong' && <RealScene si={si} mode="wrong" from={0} />}
+          {seg === 'right' && !hasFootage(`st${s.n}_right`) && <RealScene si={si} mode="bg" from={0} />}
+          {seg === 'intro' && <AbsoluteFill style={{background: 'linear-gradient(180deg,rgba(6,23,30,.25),rgba(6,23,30,.55))', ...K(t, [[3.0, {o: 0}], [3.5, {o: 1}]])}} />}
         </AbsoluteFill>
 
         {inR && <>
@@ -86,12 +82,8 @@ export const StationSeg: React.FC<StationSegProps> = ({si, seg, found, zoom, cho
           <div className="caption" style={K(t, [[3.3, {o: 0, y: 30}], [3.7, {o: 1, y: 0}]])}><div className="captxt">{s.rew}</div></div>
         </>}
 
-        {/* clues the student has found (clicked) */}
-        {seg === 'intro' && s.clues.map((c, i) => found.includes(i) && <React.Fragment key={i}>
-          <div className="pin" style={{left: c[1], top: c[2], zIndex: 12}}><div className="ring" /></div>
-          <div className="pin" style={{left: c[1], top: c[2] + (c[3] ?? (c[2] > 700 ? -115 : 115)), zIndex: 13}}>
-            <div className="chip"><span style={{color: 'var(--amber)', fontWeight: 900}}>{ar(i + 1)}</span>&nbsp; {c[0]}</div></div>
-        </React.Fragment>)}
+        {/* evidence cards: face down until the student taps them */}
+        {seg === 'intro' && [0, 1, 2].map((i) => <EvidenceCard key={i} si={si} i={i} flip={found.includes(i) ? 1 : 0} o={V(t, [[3.1 + i * 0.08, 0], [3.4 + i * 0.08, 1]])} />)}
         {seg === 'intro' && s.lens && zoom && <div className="pin" style={{left: 1000, top: 520, zIndex: 17}}>
           <div style={{width: 600, height: 600, borderRadius: '50%', background: '#fff', border: '16px solid var(--amber)', boxShadow: '0 0 0 12px rgba(0,0,0,.25),0 30px 80px rgba(0,0,0,.5)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--ink)', textAlign: 'center'}}>
             <svg width={220} height={220} viewBox="-80 -80 160 160" dangerouslySetInnerHTML={{__html: hazard(0, 0, 1.05)}} />

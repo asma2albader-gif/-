@@ -3,6 +3,7 @@ import {AbsoluteFill, useCurrentFrame, useVideoConfig} from 'remotion';
 import {ST, stationTimes} from './data';
 import {BAG, DROPS, MATE, PUDDLE, SALMA, SHARDS, STRIP, cupSvg, hazard, person, stationBg, tissue, tube} from './art';
 import {Cues, Cursor, Footage, Layer, Magnifier, Svg, Words, hasFootage} from './components';
+import {LinearCards, RealScene} from './Real';
 import {K, V, ar, back, clamp, easeOut, fadeUp, lin, pop, sceneFade} from './lib';
 
 export const stationDuration = (si: number) => stationTimes(ST[si]).dur;
@@ -110,7 +111,7 @@ export const Station: React.FC<{si: number}> = ({si}) => {
   // ---------- magnifier path ----------
   const mp: Array<[number, number, number]> = [[3.4, 1920, 1080]];
   s.clues.forEach((c, i) => {mp.push([3.85 + i * 1.25, c[1], c[2]]); mp.push([4.25 + i * 1.25, c[1], c[2]]);});
-  if (s.lens) {mp.push([7.7, 1400, 470]); mp.push([7.9 + T.L - 0.4, 1400, 470]);}
+  if (s.lens) {mp.push([7.7, s.clues[2][1], s.clues[2][2]]); mp.push([7.9 + T.L - 0.4, s.clues[2][1], s.clues[2][2]]);}
   mp.push([R - 0.4, 1700, 1150]);
   const magStyle = {transform: `translate(${V(t, mp.map((p) => [p[0], p[1]] as [number, number]))}px,${V(t, mp.map((p) => [p[0], p[2]] as [number, number]))}px)`, opacity: V(t, [[3.3, 0], [3.5, 1], [R - 0.5, 1], [R - 0.3, 0]])};
 
@@ -135,13 +136,18 @@ export const Station: React.FC<{si: number}> = ({si}) => {
   return (
     <AbsoluteFill className="stage" style={sceneFade(t, T.dur)}>
       <Cues cues={cues} />
-      {/* scene: illustration or real footage */}
+      {/* the scene: real footage of the same student (no illustrations) */}
       <AbsoluteFill style={artStyle}>
-        {showIllus && <><Svg html={stationBg(s.n)} />{actors}</>}
-        {live && <Footage k={`st${s.n}`} from={2.6} dur={R - 2.6} />}
-        {live && <Footage k={`st${s.n}`} from={D} />}
-        {liveRew && <Footage k={`st${s.n}_rewind`} from={R} dur={D - R} />}
-        {s.wrong && liveWrong && <Footage k="st1_wrong" from={W} dur={D2 - W} />}
+        <RealScene si={si} mode="bg" from={2.6} dur={R - 2.6} />
+        <RealScene si={si} mode="rew" from={R} dur={D - R} />
+        {s.wrong ? <>
+          <RealScene si={si} mode="bg" from={D} dur={W - D} />
+          <RealScene si={si} mode="wrong" from={W} dur={D2 - W} />
+          <RealScene si={si} mode="bg" from={D2} dur={P + 1 - D2} />
+        </> : <RealScene si={si} mode="bg" from={D} dur={P + 1 - D} />}
+        {/* soften the background while the evidence cards are on screen */}
+        <AbsoluteFill style={{background: 'linear-gradient(180deg,rgba(6,23,30,.25),rgba(6,23,30,.55))', ...K(t, [[3.2, {o: 0}], [3.6, {o: 1}], [R - 0.2, {o: 1}], [R, {o: 0}]])}} />
+        {s.wrong && <AbsoluteFill style={{boxShadow: `inset 0 0 ${V(t, [[W, 0], [W + 0.3, 260], [W + 1.2, 120]])}px rgba(226,88,76,.75)`, ...K(t, [[W, {o: 1}], [D2 - 0.3, {o: 1}], [D2, {o: 0}]]), ...(t < W ? {opacity: 0} : {})}} />}
       </AbsoluteFill>
       {/* rewind overlay */}
       <div className="vhs" style={K(t, [[R - 0.05, {o: 0}], [R, {o: 1}], [D - 0.1, {o: 1}], [D + 0.1, {o: 0}]])}>
@@ -150,15 +156,8 @@ export const Station: React.FC<{si: number}> = ({si}) => {
         <div className="tc">{tc}</div>
       </div>
       <div className="caption" style={K(t, [[R + 3.3, {o: 0, y: 30}], [R + 3.7, {o: 1, y: 0}], [D - 0.1, {o: 1}], [D + 0.1, {o: 0}]])}><div className="captxt">{s.rew}</div></div>
-      {/* clues */}
-      {s.clues.map((c, i) => {
-        const t0 = 4.2 + i * 1.25; const dy = c[3] ?? (c[2] > 700 ? -115 : 115);
-        return <React.Fragment key={i}>
-          <div className="pin" style={{left: c[1], top: c[2], zIndex: 12}}><div className="ring" style={K(t, [[t0, {o: 0, s: 0.3}], [t0 + 0.4, {o: 1, s: 1 + 0.06 * Math.sin(t * 6)}, back], [R - 0.2, {o: 1}], [R + 0.2, {o: 0}]])} /></div>
-          <div className="pin" style={{left: c[1], top: c[2] + dy, zIndex: 13}}><div className="chip" style={K(t, [[t0 + 0.1, {o: 0, s: 0.6}], [t0 + 0.5, {o: 1, s: 1}, back], [R - 0.2, {o: 1}], [R + 0.2, {o: 0}]])}>
-            <span style={{color: 'var(--amber)', fontWeight: 900}}>{ar(i + 1)}</span>&nbsp; {c[0]}</div></div>
-        </React.Fragment>;
-      })}
+      {/* evidence cards: real photos or written notes, revealed one by one */}
+      <LinearCards si={si} t={t} enter={3.4} leave={R} />
       <Magnifier style={magStyle} />
       {s.lens && <div className="pin" style={{left: 1000, top: 520, zIndex: 17}}>
         <div style={{width: 600, height: 600, borderRadius: '50%', background: '#fff', border: '16px solid var(--amber)', boxShadow: '0 0 0 12px rgba(0,0,0,.25),0 30px 80px rgba(0,0,0,.5)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--ink)', textAlign: 'center',

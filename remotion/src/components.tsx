@@ -73,13 +73,13 @@ export const Svg: React.FC<{html: string; style?: CSSProperties}> = ({html, styl
 
 /** Real-footage slot. Renders the clip (seconds, local time) if configured, else nothing. */
 export const hasFootage = (key: string) => !!FOOTAGE[key];
-export const Footage: React.FC<{k: string; from?: number; dur?: number; style?: CSSProperties}> = ({k, from = 0, dur, style}) => {
+export const Footage: React.FC<{k: string; from?: number; dur?: number; style?: CSSProperties; startFrom?: number}> = ({k, from = 0, dur, style, startFrom = 0}) => {
   const {fps} = useVideoConfig();
   const f = FOOTAGE[k];
   if (!f) return null;
   return (
     <Sequence from={Math.round(from * fps)} durationInFrames={dur ? Math.round(dur * fps) : undefined} layout="none">
-      <AbsoluteFill style={style}><OffthreadVideo src={asset('footage/' + f)} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} /></AbsoluteFill>
+      <AbsoluteFill style={style}><OffthreadVideo src={asset('footage/' + f)} muted startFrom={Math.round(startFrom * fps)} style={{width: '100%', height: '100%', objectFit: 'cover'}} /></AbsoluteFill>
     </Sequence>
   );
 };

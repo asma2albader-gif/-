@@ -164,7 +164,7 @@ const App: React.FC = () => {
 
           {sc.k === 'st' && sc.step === 'clues' && st && <>
             <div className="hint-bar">انقري على ما يبدو غير سليم في المشهد ({ar(found.length)} / ٣)</div>
-            {st.clues.map((c, i) => <button key={i} className="hot" aria-label={c[0]} style={{left: c[1] - 95, top: c[2] - 95}} onClick={() => clickClue(i)} />)}
+            {st.clues.map((c, i) => <button key={i} className="hot" aria-label={c[0]} style={{left: c[1] - 190, top: c[2] - 165}} onClick={() => clickClue(i)} />)}
             {zoom && <button className="closezoom" onClick={() => {sfx('click'); setZoom(false);}}>✕ إغلاق العدسة</button>}
             {found.length === st.clues.length && !zoom && <div className="bottom"><button className="btn big pulse" onClick={() => {sfx('click'); setSc({...sc, step: 'rewind'});}}>◀◀ أعيدي الشريط: ماذا حدث؟</button></div>}
           </>}
@@ -237,7 +237,7 @@ button{font-family:inherit;cursor:pointer;border:0}
 .slotbtn.ok{border:4px solid var(--teal2);background:var(--teal);color:#fff;cursor:default} .slotbtn.ok .num{background:#fff;color:var(--teal)} .slotbtn.ok small{color:var(--mint)}
 .nb .count{position:absolute;left:80px;top:440px;width:560px;height:160px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:var(--teal)}
 .hint-bar{position:absolute;left:50%;top:116px;transform:translateX(-50%);white-space:nowrap;padding:10px 36px;border-radius:999px;background:rgba(10,37,48,.88);border:2px solid var(--amber);font-size:34px;font-weight:900;color:#fff}
-.hot{position:absolute;width:190px;height:190px;border-radius:50%;background:transparent;cursor:${MAG_CURSOR}}
+.hot{position:absolute;width:380px;height:330px;border-radius:22px;background:transparent;cursor:${MAG_CURSOR}}
 .hot:hover{box-shadow:0 0 0 4px rgba(244,171,60,.6) inset}
 .closezoom{position:absolute;left:840px;top:840px;padding:12px 34px;border-radius:999px;background:#fff;color:var(--ink);font-size:30px;font-weight:900}
 .optbtn{position:absolute;top:330px;width:520px;min-height:360px;padding:30px 34px;border-radius:30px;background:#fff;color:var(--ink);font-size:32px;font-weight:700;line-height:1.5;text-align:right;border:6px solid transparent;transition:.15s}
