@@ -1,2 +1,3 @@
 node_modules/
-remotion/out/
+remotion/out/*
+!remotion/out/lab-mystery-missing-pages.mp4
