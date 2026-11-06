@@ -161,7 +161,7 @@ def main():
     total = float(sys.argv[2]) if len(sys.argv) > 2 else 210
     m = music(total); write_wav(f'{out}/music.wav', m / np.max(np.abs(m)) * .5)
     import subprocess
-    subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', f'{out}/music.wav', '-c:a', 'aac', '-b:a', '192k', f'{out}/music.m4a'], check=True)
+    subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', f'{out}/music.wav', '-c:a', 'libmp3lame', '-b:a', '160k', f'{out}/music.mp3'], check=True)
     import os; os.remove(f'{out}/music.wav')
     for k in SFX:
         x = sfx(k); write_wav(f'{out}/sfx/{k}.wav', np.clip(x * 1.6, -1, 1))

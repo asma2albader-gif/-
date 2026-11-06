@@ -7,26 +7,11 @@ import {K, V, ar, back, clamp, easeOut, fadeUp, lin, pop, sceneFade} from './lib
 
 export const stationDuration = (si: number) => stationTimes(ST[si]).dur;
 
-export const Station: React.FC<{si: number}> = ({si}) => {
-  const {fps} = useVideoConfig();
-  const t = useCurrentFrame() / fps;
+/** Illustrated actors for station `si` at station-local time `t` (supports the rewind and the station-1 wrong branch). */
+export function buildActors(si: number, t: number, T: ReturnType<typeof stationTimes>): React.ReactNode[] {
   const s = ST[si];
-  const T = stationTimes(s);
-  const {R, D, W, D2, P} = T;
+  const {R, D, W, D2} = T;
   const inR = t >= R && t < D;
-  const ph = t < R ? 0 : t < D ? 1 : 2;
-  const live = hasFootage(`st${s.n}`), liveRew = hasFootage(`st${s.n}_rewind`), liveWrong = hasFootage('st1_wrong');
-
-  // ---------- sound cues ----------
-  const cues: Array<[number, string]> = [[0.1, 'whoosh'], [0.5, 'boom'], [3.4, 'swish']];
-  s.clues.forEach((_, i) => cues.push([4.2 + i * 1.25, 'pop']));
-  if (s.lens) cues.push([7.9, 'zoom']);
-  cues.push([R, 'rewind'], [R + 1.0, 'tick'], [R + 3.3, 'pause'], [D, 'swish']);
-  if (s.wrong) cues.push([D + 2.3, 'click'], [D + 2.45, 'wrong'], [W + 1.0, 'splash'], [W + 4.4, 'click'], [D2 + 2.3, 'click']);
-  else cues.push([D + 2.3, 'click']);
-  cues.push([D2 + 2.45, 'success'], [P, 'page'], [P + 0.6, 'type'], [P + 3.1, 'swish'], [P + 3.5, 'chime']);
-
-  // ---------- illustrated actors ----------
   const bob = (t0: number, t1: number) => (t > t0 && t < t1 ? -Math.abs(Math.sin((t - t0) * 9)) * 10 : 0);
   const actors: React.ReactNode[] = [];
   const salmaAt = (tx: number, ty: number, html: string, x: number, y: number, r = 0, op = 1) =>
@@ -78,6 +63,48 @@ export const Station: React.FC<{si: number}> = ({si}) => {
       break;
     }
   }
+  return actors;
+}
+
+
+/** Restored page flying into the notebook + slot strip. `P` = start time. */
+export const PageRestore: React.FC<{si: number; t: number; P: number}> = ({si, t, P}) => {
+  const s = ST[si];
+  const scx = 350 + (4 - si) * 250 + 110;
+  const done = t > P + 3.5;
+  return <>
+      <div className="abs" style={{inset: 0, background: 'rgba(6,23,30,.88)', zIndex: 28, ...K(t, [[P - 0.2, {o: 0}], [P + 0.3, {o: 1}]])}} />
+      <div className="page" style={K(t, [[P, {o: 0, s: 0.4, r: -12, x: 0, y: -200}], [P + 0.6, {o: 1, s: 1, r: 0, x: 0, y: 0}, back], [P + 2.9, {s: 1, x: 0, y: 0, r: 0}], [P + 3.5, {s: 0.275, x: scx - 960, y: 480, r: 0}], [P + 3.55, {o: 1}], [P + 3.65, {o: 0}]])}>
+        <div className="num">الصفحة {ar(s.n)} — مستعادة ✓</div><div className="lt">{s.law}</div><div className="law"><Words text={s.page} t={t} t0={P + 0.6} t1={P + 2.4} /></div>
+      </div>
+      <div className="abs" style={{left: 0, right: 0, top: 860, height: 140, zIndex: 29, ...K(t, [[P + 0.2, {o: 0, y: 40}], [P + 0.7, {o: 1, y: 0}]])}}>
+        {ST.map((x, i) => {const full = i < si || (i === si && done);
+          return <div key={i} className={'slot' + (full ? ' full' : '')} style={{left: 350 + (4 - i) * 250, ...(i === si ? K(t, [[P + 3.5, {s: 1}], [P + 3.75, {s: 1.15}, easeOut], [P + 4.0, {s: 1}]]) : {})}}>
+            <div className="ic">{full ? '✓' : ar(x.n)}</div><div>{x.name}</div></div>;})}
+      </div>
+  </>;
+};
+
+export const Station: React.FC<{si: number}> = ({si}) => {
+  const {fps} = useVideoConfig();
+  const t = useCurrentFrame() / fps;
+  const s = ST[si];
+  const T = stationTimes(s);
+  const {R, D, W, D2, P} = T;
+  const inR = t >= R && t < D;
+  const ph = t < R ? 0 : t < D ? 1 : 2;
+  const live = hasFootage(`st${s.n}`), liveRew = hasFootage(`st${s.n}_rewind`), liveWrong = hasFootage('st1_wrong');
+
+  // ---------- sound cues ----------
+  const cues: Array<[number, string]> = [[0.1, 'whoosh'], [0.5, 'boom'], [3.4, 'swish']];
+  s.clues.forEach((_, i) => cues.push([4.2 + i * 1.25, 'pop']));
+  if (s.lens) cues.push([7.9, 'zoom']);
+  cues.push([R, 'rewind'], [R + 1.0, 'tick'], [R + 3.3, 'pause'], [D, 'swish']);
+  if (s.wrong) cues.push([D + 2.3, 'click'], [D + 2.45, 'wrong'], [W + 1.0, 'splash'], [W + 4.4, 'click'], [D2 + 2.3, 'click']);
+  else cues.push([D + 2.3, 'click']);
+  cues.push([D2 + 2.45, 'success'], [P, 'page'], [P + 0.6, 'type'], [P + 3.1, 'swish'], [P + 3.5, 'chime']);
+
+  const actors = buildActors(si, t, T);
   const showIllus = !(live && !inR) && !(liveRew && inR) && !(s.wrong && liveWrong && t > W && t < D2);
 
   // ---------- magnifier path ----------
@@ -174,16 +201,7 @@ export const Station: React.FC<{si: number}> = ({si}) => {
         <div className="center" style={{top: 960, zIndex: 22, ...K(t, [[W + 3.2, {o: 0, s: 0.6}], [W + 3.6, {o: 1, s: 1}, back], [W + 4.4, {s: 0.92}], [W + 4.6, {s: 1}], [D2 - 0.5, {o: 1}], [D2 - 0.2, {o: 0}]])}}>
           <span className="btn" style={{fontSize: 34, padding: '12px 46px'}}>أعيدي المحاولة</span></div>
       </>}
-      {/* page restore */}
-      <div className="abs" style={{inset: 0, background: 'rgba(6,23,30,.88)', zIndex: 28, ...K(t, [[P - 0.2, {o: 0}], [P + 0.3, {o: 1}]])}} />
-      <div className="page" style={K(t, [[P, {o: 0, s: 0.4, r: -12, x: 0, y: -200}], [P + 0.6, {o: 1, s: 1, r: 0, x: 0, y: 0}, back], [P + 2.9, {s: 1, x: 0, y: 0, r: 0}], [P + 3.5, {s: 0.275, x: scx - 960, y: 480, r: 0}], [P + 3.55, {o: 1}], [P + 3.65, {o: 0}]])}>
-        <div className="num">الصفحة {ar(s.n)} — مستعادة ✓</div><div className="lt">{s.law}</div><div className="law"><Words text={s.page} t={t} t0={P + 0.6} t1={P + 2.4} /></div>
-      </div>
-      <div className="abs" style={{left: 0, right: 0, top: 860, height: 140, zIndex: 29, ...K(t, [[P + 0.2, {o: 0, y: 40}], [P + 0.7, {o: 1, y: 0}]])}}>
-        {ST.map((x, i) => {const full = i < si || (i === si && done);
-          return <div key={i} className={'slot' + (full ? ' full' : '')} style={{left: 350 + (4 - i) * 250, ...(i === si ? K(t, [[P + 3.5, {s: 1}], [P + 3.75, {s: 1.15}, easeOut], [P + 4.0, {s: 1}]]) : {})}}>
-            <div className="ic">{full ? '✓' : ar(x.n)}</div><div>{x.name}</div></div>;})}
-      </div>
+      <PageRestore si={si} t={t} P={P} />
       <Cursor t={t} path={cpath} clicks={s.wrong ? [D + 2.3, W + 4.4, D2 + 2.3] : [D + 2.3]} hidden={cursorHidden} />
       {/* title card */}
       <AbsoluteFill style={{zIndex: 60, background: 'radial-gradient(ellipse at 50% 45%,#134854,#0a2530 60%,#06171e)', ...K(t, [[2.6, {o: 1}], [3.2, {o: 0}]])}}>

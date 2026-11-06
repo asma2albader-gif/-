@@ -5,12 +5,18 @@ import {FOOTAGE} from './footage';
 import {CURSOR, MAG} from './art';
 import {V, clamp} from './lib';
 
+/** Asset URL: staticFile() in Remotion renders/Studio; relative path inside the interactive web app. */
+export const asset = (p: string) => {
+  const base = typeof window !== 'undefined' ? (window as any).__LAB_ASSET_BASE__ : undefined;
+  return base !== undefined ? base + p : staticFile(p);
+};
+
 // ---------- fonts (official @remotion/fonts loader; Remotion waits for them before rendering) ----------
 const FONTS: Array<[string, string, string]> = [
   ['Cairo', '400', 'Cairo-400.ttf'], ['Cairo', '700', 'Cairo-700.ttf'], ['Cairo', '900', 'Cairo-900.ttf'],
   ['Tajawal', '500', 'Tajawal-500.ttf'], ['Tajawal', '800', 'Tajawal-800.ttf'],
 ];
-FONTS.forEach(([family, weight, file]) => loadFont({family, weight, url: staticFile('fonts/' + file)}));
+FONTS.forEach(([family, weight, file]) => loadFont({family, weight, url: asset('fonts/' + file)}));
 
 export const CSS = `
 :root{--ink:#0a2530;--ink2:#113845;--teal:#127369;--teal2:#1fa595;--mint:#bfe9df;--paper:#fbf6ea;--amber:#f4ab3c;--red:#e2584c;--green:#35b37a}
@@ -73,7 +79,7 @@ export const Footage: React.FC<{k: string; from?: number; dur?: number; style?: 
   if (!f) return null;
   return (
     <Sequence from={Math.round(from * fps)} durationInFrames={dur ? Math.round(dur * fps) : undefined} layout="none">
-      <AbsoluteFill style={style}><OffthreadVideo src={staticFile('footage/' + f)} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} /></AbsoluteFill>
+      <AbsoluteFill style={style}><OffthreadVideo src={asset('footage/' + f)} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} /></AbsoluteFill>
     </Sequence>
   );
 };
@@ -81,7 +87,7 @@ export const Footage: React.FC<{k: string; from?: number; dur?: number; style?: 
 /** Sound effect cue at local time `at` (seconds). */
 export const Sfx: React.FC<{at: number; type: string; volume?: number}> = ({at, type, volume = 0.8}) => {
   const {fps} = useVideoConfig();
-  return <Sequence from={Math.max(0, Math.round(at * fps))} layout="none"><Audio src={staticFile(`audio/sfx/${type}.wav`)} volume={volume} /></Sequence>;
+  return <Sequence from={Math.max(0, Math.round(at * fps))} layout="none"><Audio src={asset(`audio/sfx/${type}.wav`)} volume={volume} /></Sequence>;
 };
 export const Cues: React.FC<{cues: Array<[number, string]>}> = ({cues}) => <>{cues.map(([a, ty], i) => <Sfx key={i} at={a} type={ty} />)}</>;
 

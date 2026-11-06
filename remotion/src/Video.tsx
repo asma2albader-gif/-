@@ -23,7 +23,7 @@ export const LabMystery: React.FC = () => {
   return (
     <AbsoluteFill style={BG} dir="rtl" lang="ar">
       <style>{CSS}</style>
-      <Audio src={staticFile('audio/music.m4a')} volume={(f) => interpolate(f, [0, 60, durationInFrames - 120, durationInFrames], [0, 0.55, 0.55, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})} />
+      <Audio src={staticFile('audio/music.mp3')} volume={(f) => interpolate(f, [0, 60, durationInFrames - 120, durationInFrames], [0, 0.55, 0.55, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})} />
       <Series>
         {TIMELINE.map((x) => <Series.Sequence key={x.key} durationInFrames={frames(x.dur)} name={x.key}>{x.el}</Series.Sequence>)}
       </Series>

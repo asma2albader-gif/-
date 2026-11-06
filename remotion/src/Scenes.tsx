@@ -29,12 +29,12 @@ export const Intro: React.FC = () => {
 };
 
 /* ---------- 4. Mission ---------- */
-export const Mission: React.FC = () => {
+export const Mission: React.FC<{interactive?: boolean}> = ({interactive}) => {
   const t = useT();
   const live = hasFootage('mission');
   return (
-    <AbsoluteFill className="stage" style={sceneFade(t, DUR.mission)}>
-      <Cues cues={[[1.3, 'pop'], [1.8, 'type'], [6.5, 'swish'], [6.7, 'swish'], [8.6, 'pop'], [10.6, 'click'], [11.4, 'whoosh']]} />
+    <AbsoluteFill className="stage" style={interactive ? K(t, [[0, {o: 0}], [0.45, {o: 1}]]) : sceneFade(t, DUR.mission)}>
+      <Cues cues={interactive ? [[1.3, 'pop'], [1.8, 'type'], [6.5, 'swish'], [6.7, 'swish']] : [[1.3, 'pop'], [1.8, 'type'], [6.5, 'swish'], [6.7, 'swish'], [8.6, 'pop'], [10.6, 'click'], [11.4, 'whoosh']]} />
       {live ? <Footage k="mission" /> : <>
         <Svg html={backdrop('ms', {shelf: true}) + counter('ms', 1000, 560, 800)} />
         <Layer html={person({...SUP, armR: -28, hand: '<rect x="96" y="-210" width="70" height="90" rx="8" fill="#f4ab3c" transform="rotate(10 120 -170)"/>'})} tx={420} ty={760} cls="p" style={K(t, [[0, {x: -500}], [1.4, {x: 0}, easeOut]])} />
@@ -47,8 +47,10 @@ export const Mission: React.FC = () => {
         <div style={{fontWeight: 900, fontSize: 30, color: 'var(--teal)'}}>المشرفة</div>
         <div style={{fontSize: 44, fontWeight: 700, lineHeight: 1.6}}><Words text={MISSION} t={t} t0={1.8} t1={5.4} /></div>
       </div>
-      <div className="center" style={{top: 900, ...K(t, pop(8.6))}}><span className="btn" style={{display: 'inline-block', transform: `scale(${t > 8.6 ? 1 + 0.04 * Math.sin((t - 8.6) * 6) : 1})`}}>ابدئي التحقيق</span></div>
-      <Cursor t={t} path={[[9.2, 1300, 1080], [10.4, 960, 930]]} clicks={[10.6]} />
+      {!interactive && <>
+        <div className="center" style={{top: 900, ...K(t, pop(8.6))}}><span className="btn" style={{display: 'inline-block', transform: `scale(${t > 8.6 ? 1 + 0.04 * Math.sin((t - 8.6) * 6) : 1})`}}>ابدئي التحقيق</span></div>
+        <Cursor t={t} path={[[9.2, 1300, 1080], [10.4, 960, 930]]} clicks={[10.6]} />
+      </>}
     </AbsoluteFill>
   );
 };
@@ -98,12 +100,13 @@ export const Notebook: React.FC = () => {
 };
 
 /* ---------- 13. Final reveal ---------- */
-export const Reveal: React.FC = () => {
-  const t = useT();
+/** `from` offsets local time (to play only part of the scene); `interactive` hides the reflection text and the finish button (the app shows them as real controls). */
+export const Reveal: React.FC<{from?: number; interactive?: boolean}> = ({from = 0, interactive}) => {
+  const t = useT() + from;
   const live = hasFootage('ending');
   return (
-    <AbsoluteFill className="stage" style={sceneFade(t, DUR.reveal)}>
-      <Cues cues={[[0.2, 'whoosh'], [1.2, 'pop'], [1.5, 'pop'], [1.8, 'pop'], [2.1, 'pop'], [2.4, 'pop'], [3.4, 'tick'], [4.8, 'boom'], [7.8, 'whoosh'], [9.0, 'shimmer'], [12.2, 'success'], [13.6, 'pop']]} />
+    <AbsoluteFill className="stage" style={interactive ? {} : sceneFade(t, DUR.reveal)}>
+      <Cues cues={([[0.2, 'whoosh'], [1.2, 'pop'], [1.5, 'pop'], [1.8, 'pop'], [2.1, 'pop'], [2.4, 'pop'], [3.4, 'tick'], [4.8, 'boom'], [7.8, 'whoosh'], [9.0, 'shimmer'], [12.2, 'success'], [13.6, 'pop']] as Array<[number, string]>).map(([a, ty]) => [a - from, ty] as [number, string]).filter(([a]) => a >= 0)} />
       <AbsoluteFill style={K(t, [[7.6, {o: 1}], [8.2, {o: 0}]])}>
         <div className="center h2" style={{top: 70, fontSize: 64, ...K(t, fadeUp(0.2))}}>الكشف الختامي</div>
         <div className="center h3 mint" style={{top: 170, ...K(t, fadeUp(0.7))}}>من وراء المخالفات الخمس؟</div>
@@ -116,19 +119,19 @@ export const Reveal: React.FC = () => {
         <div className="center h3" style={{top: 925, ...K(t, fadeUp(5.8))}}>السبب هو الاستعجال… لا الأشخاص</div>
       </AbsoluteFill>
       <AbsoluteFill style={K(t, [[7.8, {o: 0, s: 1.06}], [8.6, {o: 1, s: 1}, easeOut]])}>
-        {live ? <Footage k="ending" from={7.8} /> : <>
+        {live ? <Footage k="ending" from={7.8 - from} /> : <>
           <Svg html={backdrop('rv', {}) + counter('rv', 80, 560, 900) + flask(300, 560, '#5fc3a8', 0.8) + tube(420, 560, '#f4ab3c') + tube(460, 560, '#6aa6e8')} />
           <Layer html={person(SUP)} tx={1330} ty={780} cls="p" />
           <Layer html={person({...SALMA, goggles: true})} tx={1620} ty={790} cls="p" style={K(t, [[8.6, {x: 500}], [10, {x: 0}, easeOut]])} />
         </>}
         <div className="abs" style={{inset: 0, background: 'linear-gradient(270deg,rgba(6,23,30,0) 30%,rgba(6,23,30,.9) 52%)'}} />
-        <div className="abs" style={{left: 110, width: 900, top: 200, textAlign: 'center', ...K(t, fadeUp(9.0, 0.8))}}>
+        <div className="abs" style={{left: 110, width: 900, top: 200, textAlign: 'center', ...K(t, fadeUp(9.0, 0.8)), ...(interactive ? {display: 'none'} : {})}}>
           <div className="h3 mint" style={{fontSize: 36}}>سؤال للتأمل</div>
           <div className="h2" style={{fontSize: 76, marginTop: 10}}>ماذا كنتِ ستفعلين<br />في مكان سلمى؟</div></div>
         <div className="abs" style={{left: 110, width: 900, top: 600, textAlign: 'center', ...K(t, pop(12.2, 0.6))}}>
           <div style={{display: 'inline-block', padding: '18px 40px', borderRadius: 24, background: 'var(--green)', fontWeight: 900, fontSize: 38, whiteSpace: 'nowrap'}}>✓ المختبر جاهز لاستقبال الدفعة الجديدة</div>
           <div className="mint" style={{fontSize: 36, fontWeight: 700, marginTop: 18}}>الصفحات المستعادة ٥ / ٥</div></div>
-        <div className="abs" style={{left: 110, width: 900, top: 860, textAlign: 'center', ...K(t, pop(13.6, 0.5))}}><span className="btn">إنهاء</span></div>
+        {!interactive && <div className="abs" style={{left: 110, width: 900, top: 860, textAlign: 'center', ...K(t, pop(13.6, 0.5))}}><span className="btn">إنهاء</span></div>}
       </AbsoluteFill>
     </AbsoluteFill>
   );
