@@ -1,5 +1,35 @@
 # أوامر Gemini (Veo) لتوليد مشاهد «لغز المختبر»
 
+## ⭐ الأوامر الحالية: لإكمال المحطات بنفس الطالبة
+
+مقطعا المحطة ١ (القهوة) والمحطة ٥ (الزجاج) جاهزان ومركّبان. لتكون الطالبة **نفسها** في بقية المشاهد:
+1. في Gemini اضغطي **+** وارفعي الصورة `salma_reference.jpg` (صورة الطالبة من مقطعك).
+2. اختاري أداة **فيديو**، ثم الصقي أمرًا واحدًا من الأوامر التالية.
+3. ارفعي المقطع هنا، وأنا أركّبه في مكانه.
+
+**المحطة ٢ (الممر):**
+```
+Use the woman in the attached image, same face, hair and white lab coat. Realistic video, 16:9, same modern lab. She walks in hurriedly, drops her backpack on the floor in the middle of the aisle between two lab benches, and walks away. A green EXIT sign is visible at the end of the aisle. Only her, no men, no text on screen.
+```
+
+**المحطة ٣ (الكهرباء والماء):**
+```
+Use the woman in the attached image, same face, hair and white lab coat. Realistic video, 16:9, same modern lab. On a wet bench next to the sink, she hurriedly stretches an extension cord, plugs in a hot plate with wet hands, and walks away. Only her, no men, no text on screen.
+```
+
+**المحطة ٤ (المادة المنسكبة):**
+```
+Use the woman in the attached image, same face, hair and white lab coat. Realistic video, 16:9, same modern lab. She notices a small puddle of green liquid on the floor next to a bottle with a small hazard label, and quickly wipes it with a paper tissue without reading the label. Only her, no men, no text on screen.
+```
+
+**الختام (التصرف الآمن):**
+```
+Use the woman in the attached image, same face and hair. Realistic video, 16:9, same modern lab, tidy and clean. She wears her white lab coat with the safety goggles over her eyes and gloves, works calmly at a bench, then looks at the camera and smiles. Only her, no men, no text on screen.
+```
+
+---
+
+
 انسخي كل أمر كما هو إلى Gemini. الأوامر بالإنجليزية لأن Veo يلتزم بها بدقة أكبر.
 ثم ضعي المقطع الناتج في `public/footage/` واكتبي اسمه في خانته في `src/footage.ts`.
 
