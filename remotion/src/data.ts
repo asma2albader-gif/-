@@ -54,8 +54,9 @@ export const WHAT = ['دخلت بكوب', 'تركت حقيبتها', 'مدّت �
 /** Station timing (seconds, local to the station scene). */
 export function stationTimes(s: Station) {
   const L = s.lens ? 2.4 : 0; const R = 7.8 + L, D = R + 4.8;
-  if (s.wrong) {const W = D + 2.9, D2 = W + 5.2, P = D2 + 3.9; return {L, R, D, W, D2, P, dur: P + 4.2};}
-  return {L, R, D, W: -1, D2: D, P: D + 3.9, dur: D + 3.9 + 4.2};
+  const HOLD = 5.5; // «قرار موفّق!» over real footage of the safe practice
+  if (s.wrong) {const W = D + 2.9, D2 = W + 5.2, P = D2 + HOLD; return {L, R, D, W, D2, P, dur: P + 4.2};}
+  return {L, R, D, W: -1, D2: D, P: D + HOLD, dur: D + HOLD + 4.2};
 }
 
 // ---------------- Interactive version ----------------

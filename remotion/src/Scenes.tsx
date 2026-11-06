@@ -43,7 +43,7 @@ export const Mission: React.FC<{interactive?: boolean}> = ({interactive}) => {
           return <Layer key={i} tx={1400} ty={540} html={`<rect x="-38" y="-48" width="76" height="96" rx="6" fill="#fbf6ea" stroke="#127369" stroke-width="4"/><path d="M-24,-20h48M-24,0h48M-24,20h30" stroke="rgba(18,115,105,.4)" stroke-width="5"/>`}
             style={K(t, [[t0, {o: 0, x: 0, y: 0, r: 0}], [t0 + 0.1, {o: 1}], [t0 + 1.6, {o: 0, x: dx, y: dy, r: (i % 2 ? 1 : -1) * 220}, easeOut]])} />;})}
       </>}
-      <div className="abs card" style={{left: live ? 120 : 640, top: live ? 640 : 150, width: live ? 1680 : 1080, padding: '44px 56px', borderRadius: 36, ...K(t, [[1.3, {o: 0, s: 0.85}], [1.8, {o: 1, s: 1}, back]])}}>
+      <div className="abs card" style={{left: live ? 120 : 640, top: live ? 500 : 150, width: live ? 1680 : 1080, padding: '44px 56px', borderRadius: 36, ...K(t, [[1.3, {o: 0, s: 0.85}], [1.8, {o: 1, s: 1}, back]])}}>
         <div style={{fontWeight: 900, fontSize: 30, color: 'var(--teal)'}}>المشرفة</div>
         <div style={{fontSize: 44, fontWeight: 700, lineHeight: 1.6}}><Words text={MISSION} t={t} t0={1.8} t1={5.4} /></div>
       </div>
@@ -119,7 +119,7 @@ export const Reveal: React.FC<{from?: number; interactive?: boolean}> = ({from =
         <div className="center h3" style={{top: 925, ...K(t, fadeUp(5.8))}}>السبب هو الاستعجال… لا الأشخاص</div>
       </AbsoluteFill>
       <AbsoluteFill style={K(t, [[7.8, {o: 0, s: 1.06}], [8.6, {o: 1, s: 1}, easeOut]])}>
-        {live ? <Footage k="ending" from={7.8 - from} /> : <>
+        {live ? <Footage k="ending" from={7.8 - from} style={{transform: 'scaleX(-1)'}} /> : <>
           <Svg html={backdrop('rv', {}) + counter('rv', 80, 560, 900) + flask(300, 560, '#5fc3a8', 0.8) + tube(420, 560, '#f4ab3c') + tube(460, 560, '#6aa6e8')} />
           <Layer html={person(SUP)} tx={1330} ty={780} cls="p" />
           <Layer html={person({...SALMA, goggles: true})} tx={1620} ty={790} cls="p" style={K(t, [[8.6, {x: 500}], [10, {x: 0}, easeOut]])} />

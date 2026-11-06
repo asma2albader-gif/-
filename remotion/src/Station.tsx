@@ -124,10 +124,11 @@ export const Station: React.FC<{si: number}> = ({si}) => {
   const optL = [1270, 700, 130];
   const dimKf: any = [[D, {o: 0}], [D + 0.4, {o: 1}]]; if (s.wrong) dimKf.push([W - 0.1, {o: 1}], [W + 0.3, {o: 0}], [D2 - 0.4, {o: 0}], [D2, {o: 1}]);
   const qk: any = [[D + 0.2, {o: 0, y: -30}], [D + 0.6, {o: 1, y: 0}]]; if (s.wrong) qk.push([W - 0.1, {o: 1, y: 0}], [W + 0.2, {o: 0, y: -30}], [D2 - 0.3, {o: 0, y: -30}], [D2, {o: 1, y: 0}]);
+  qk.push([D2 + 2.9, {o: 1, y: 0}], [D2 + 3.3, {o: 0, y: -30}]);
   const cpath: Array<[number, number, number]> = s.wrong
     ? [[D + 1.2, 960, 1100], [D + 2.1, 1530, 560], [W, 1530, 560], [W + 3.6, 1300, 1100], [W + 4.3, 960, 990], [D2 + 1.2, 960, 990], [D2 + 2.1, 960, 560]]
     : [[D + 1.2, 960, 1100], [D + 2.1, 960, 560]];
-  const cursorHidden = t < D + 1.0 || t > P - 0.2 || (s.wrong && t > W + 0.2 && t < W + 3.3);
+  const cursorHidden = t < D + 1.0 || t > D2 + 2.8 || (s.wrong && t > W + 0.2 && t < W + 3.3);
   const scx = 350 + (4 - si) * 250 + 110;
   const done = t > P + 3.5;
 
@@ -179,7 +180,7 @@ export const Station: React.FC<{si: number}> = ({si}) => {
       {s.opts.map((o, i) => {
         const k: any = [[D + 0.4 + i * 0.2, {o: 0, y: 80}], [D + 0.9 + i * 0.2, {o: 1, y: 0}, back]];
         if (s.wrong) k.push([W - 0.1, {o: 1, y: 0}], [W + 0.25, {o: 0, y: 80}], [D2 - 0.3 + i * 0.12, {o: 0, y: 80}], [D2 + 0.2 + i * 0.12, {o: 1, y: 0}, back]);
-        k.push([P - 0.3, {o: 1, y: 0}], [P, {o: 0, y: 0}]);
+        k.push([D2 + 2.9, {o: 1, y: 0}], [D2 + 3.3, {o: 0, y: 0}]);
         let st = '';
         if (s.wrong && i === 0 && t > D + 2.4 && t < W + 0.3) st = 'bad';
         if (i === 1 && t > D2 + 2.4) st = 'good';
@@ -191,6 +192,8 @@ export const Station: React.FC<{si: number}> = ({si}) => {
         return <div key={i} className="opt" style={style}><div className="let">{['أ', 'ب', 'ج'][i]}</div>{o}
           <div className="mark" style={{background: st === 'good' ? 'var(--green)' : st === 'bad' ? 'var(--red)' : 'transparent'}}>{st === 'good' ? '✓' : st === 'bad' ? '✗' : ''}</div></div>;
       })}
+      {hasFootage(`st${s.n}_right`) && <AbsoluteFill style={{zIndex: 25, ...K(t, [[D2 + 2.6, {o: 0}], [D2 + 3.2, {o: 1}]])}}>
+        <Footage k={`st${s.n}_right`} from={D2 + 2.6} dur={P + 0.6 - (D2 + 2.6)} /></AbsoluteFill>}
       <div className="fb" style={K(t, [[D2 + 2.5, {o: 0, s: 0.7}], [D2 + 2.9, {o: 1, s: 1}, back], [P - 0.3, {o: 1}], [P, {o: 0}]])}><div className="fbin">قرار موفّق!</div><div className="fbsub">{s.why}</div></div>
       {s.wrong && <>
         <div className="center" style={{top: 150, zIndex: 22, ...K(t, [[W + 0.3, {o: 0, y: -30}], [W + 0.7, {o: 1, y: 0}], [D2 - 0.5, {o: 1}], [D2 - 0.2, {o: 0}]])}}>

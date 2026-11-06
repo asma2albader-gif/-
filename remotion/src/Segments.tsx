@@ -27,9 +27,10 @@ export const OpeningSeg: React.FC = () => (
 /* ---------- Station ---------- */
 export type StationSegProps = {si: number; seg: 'intro' | 'rewind' | 'wrong' | 'right'; found: number[]; zoom: boolean; choice: number; count: number};
 
+const RIGHT_P = 3.4; // when the page starts flying back (after the real safe-practice footage)
 export const stationSegDur = (si: number, seg: StationSegProps['seg']) => {
   const T = stationTimes(ST[si]);
-  return seg === 'intro' ? 3.6 : seg === 'rewind' ? T.D - T.R : seg === 'wrong' ? 4.4 : 6.2;
+  return seg === 'intro' ? 3.6 : seg === 'rewind' ? T.D - T.R : seg === 'wrong' ? 4.4 : RIGHT_P + 4.4;
 };
 
 const STEP_NAMES = ['العدسة', 'إعادة الشريط', 'القرار'];
@@ -66,7 +67,7 @@ export const StationSeg: React.FC<StationSegProps> = ({si, seg, found, zoom, cho
     seg === 'intro' ? [[0.1, 'whoosh'], [0.5, 'boom'], [3.0, 'swish']]
     : seg === 'rewind' ? [[0, 'rewind'], [1.0, 'tick'], [3.3, 'pause']]
     : seg === 'wrong' ? [[0, 'wrong'], ...(st1Spill ? [[1.0, 'splash'] as [number, string]] : [])]
-    : [[0, 'success'], [1.4, 'page'], [2.0, 'type'], [4.5, 'swish'], [4.9, 'chime']];
+    : [[0, 'success'], [RIGHT_P, 'page'], [RIGHT_P + 0.6, 'type'], [RIGHT_P + 3.1, 'swish'], [RIGHT_P + 3.5, 'chime']];
 
   return (
     <Shell>
@@ -111,12 +112,13 @@ export const StationSeg: React.FC<StationSegProps> = ({si, seg, found, zoom, cho
 
         {/* right choice: feedback, then the page returns to the notebook */}
         {seg === 'right' && <>
-          <div className="dim" style={K(t, [[0, {o: 0.6}], [1.2, {o: 0.8}]])} />
-          <div className="fb" style={{top: 400, ...K(t, [[0, {o: 0, s: 0.7}], [0.4, {o: 1, s: 1}, back], [1.2, {o: 1}], [1.5, {o: 0}]])}}><div className="fbin">قرار موفّق!</div><div className="fbsub">{s.why}</div></div>
-          <PageRestore si={si} t={t} P={1.4} />
+          {hasFootage(`st${s.n}_right`) ? <Footage k={`st${s.n}_right`} from={0} dur={RIGHT_P + 0.6} />
+            : <div className="dim" style={K(t, [[0, {o: 0.6}], [1.2, {o: 0.8}]])} />}
+          <div className="fb" style={K(t, [[0, {o: 0, s: 0.7}], [0.4, {o: 1, s: 1}, back], [RIGHT_P - 0.3, {o: 1}], [RIGHT_P, {o: 0}]])}><div className="fbin">قرار موفّق!</div><div className="fbsub" style={{textShadow: '0 2px 10px rgba(0,0,0,.9)'}}>{s.why}</div></div>
+          <PageRestore si={si} t={t} P={RIGHT_P} />
         </>}
 
-        <TopBar si={si} ph={ph} count={count + (seg === 'right' && t > 4.9 ? 1 : 0)} style={seg === 'intro' ? K(t, [[3.0, {o: 0, y: -60}], [3.5, {o: 1, y: 0}]]) : undefined} />
+        <TopBar si={si} ph={ph} count={count + (seg === 'right' && t > RIGHT_P + 3.5 ? 1 : 0)} style={seg === 'intro' ? K(t, [[3.0, {o: 0, y: -60}], [3.5, {o: 1, y: 0}]]) : undefined} />
 
         {/* title card */}
         {seg === 'intro' && <AbsoluteFill style={{zIndex: 60, background: 'radial-gradient(ellipse at 50% 45%,#134854,#0a2530 60%,#06171e)', ...K(t, [[2.6, {o: 1}], [3.2, {o: 0}]])}}>

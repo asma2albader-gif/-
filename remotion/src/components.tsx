@@ -50,7 +50,7 @@ export const CSS = `
 .opt .mark{position:absolute;left:24px;top:24px;width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:900;color:#fff}
 .fb{position:absolute;left:0;right:0;top:740px;text-align:center;z-index:27}
 .fbin{display:inline-block;padding:22px 60px;border-radius:24px;background:var(--green);color:#fff;font-weight:900;font-size:50px;box-shadow:0 16px 40px rgba(0,0,0,.35)}
-.fbsub{font-size:36px;font-weight:700;margin-top:14px;color:var(--mint)}
+.fbsub{display:table;margin:14px auto 0;padding:8px 30px;border-radius:999px;background:rgba(10,37,48,.85);font-size:36px;font-weight:700;color:var(--mint)}
 .page{position:absolute;left:560px;top:150px;width:800px;height:600px;background:var(--paper);color:var(--ink);border-radius:18px;padding:60px 70px;box-shadow:0 30px 80px rgba(0,0,0,.45);background-image:repeating-linear-gradient(180deg,transparent 0 63px,rgba(18,115,105,.18) 63px 65px);z-index:30}
 .page:before{content:"";position:absolute;right:46px;top:0;bottom:0;width:3px;background:rgba(226,88,76,.45)}
 .page .num{font-weight:900;font-size:30px;color:var(--teal)} .page .lt{font-weight:900;font-size:52px;line-height:1.3;margin:6px 0 24px} .page .law{font-weight:700;font-size:40px;line-height:1.6}
