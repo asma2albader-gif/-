@@ -1,6 +1,6 @@
-"""Synthesise the soundtrack (music bed + sound effects) for the video.
-Usage: python3 audio.py out/cues.json out/soundtrack.wav
-cues.json = {"total": seconds, "cues": [{"t": sec, "type": name}, ...]} (exported by render.cjs)
+"""Synthesise the royalty-free music bed and sound effects used by the Remotion video.
+Usage: python3 scripts/audio.py public/audio <total_seconds>
+Writes public/audio/music.wav and public/audio/sfx/<name>.wav
 """
 import json, sys, wave
 import numpy as np
@@ -145,23 +145,26 @@ def music(total):
     fade = np.minimum(1, tt / 2.5) * np.clip((total - tt) / 4, 0, 1)
     return out * fade
 
-def main():
-    cues = json.load(open(sys.argv[1])); total = cues['total']
-    mix = music(total)
-    cache = {}
-    for c in cues['cues']:
-        k = c['type']
-        if k not in cache: cache[k] = sfx(k)
-        x = cache[k]; s = int(c['t'] * SR); e = min(len(mix), s + len(x))
-        if s < len(mix): mix[s:e] += x[:e - s] * .9
-    peak = np.max(np.abs(mix)); mix = mix / peak * .89
-    # gentle stereo widening: slight delay on right channel
+def write_wav(path, mono):
+    peak = np.max(np.abs(mono)) or 1
     d = int(.012 * SR)
-    L = mix; R = np.concatenate([np.zeros(d), mix[:-d]]) * .97 + mix * .03
-    st = np.stack([L, R], 1)
-    pcm = (np.clip(st, -1, 1) * 32767).astype('<i2')
-    with wave.open(sys.argv[2], 'wb') as w:
+    L = mono; R = np.concatenate([np.zeros(d), mono[:-d]]) * .97 + mono * .03
+    pcm = (np.clip(np.stack([L, R], 1), -1, 1) * 32767).astype('<i2')
+    with wave.open(path, 'wb') as w:
         w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR); w.writeframes(pcm.tobytes())
-    print('wrote', sys.argv[2], f'{total:.1f}s', len(cues['cues']), 'cues')
+
+SFX = ['whoosh', 'swish', 'pop', 'click', 'boom', 'shimmer', 'type', 'rewind', 'tick', 'pause',
+       'wrong', 'splash', 'success', 'page', 'chime', 'ding', 'zoom']
+
+def main():
+    out = sys.argv[1] if len(sys.argv) > 1 else 'public/audio'
+    total = float(sys.argv[2]) if len(sys.argv) > 2 else 210
+    m = music(total); write_wav(f'{out}/music.wav', m / np.max(np.abs(m)) * .5)
+    import subprocess
+    subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', f'{out}/music.wav', '-c:a', 'aac', '-b:a', '192k', f'{out}/music.m4a'], check=True)
+    import os; os.remove(f'{out}/music.wav')
+    for k in SFX:
+        x = sfx(k); write_wav(f'{out}/sfx/{k}.wav', np.clip(x * 1.6, -1, 1))
+    print('wrote music', f'{total:.0f}s', 'and', len(SFX), 'sfx to', out)
 
 if __name__ == '__main__': main()

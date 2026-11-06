@@ -1,10 +1,12 @@
 {
-  "name": "remotion",
+  "name": "lab-mystery-video",
   "version": "1.0.0",
-  "description": "",
+  "description": "Lab Mystery: Missing Pages — Remotion video",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "studio": "remotion studio src/index.ts",
+    "audio": "python3 scripts/audio.py public/audio 210",
+    "render": "remotion render src/index.ts LabMystery out/lab-mystery-missing-pages.mp4 --concurrency=3"
   },
   "keywords": [],
   "author": "",
