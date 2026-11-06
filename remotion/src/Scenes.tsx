@@ -1,13 +1,13 @@
 import React from 'react';
 import {AbsoluteFill, useCurrentFrame, useVideoConfig} from 'remotion';
-import {FILL, MISSION, PHASE, ST, SUBTITLE, SUPERVISOR, TAGLINE, TEAM, TITLE, WHAT} from './data';
-import {ICON, SALMA, SUP, counter, backdrop, flask, notebookIcon, person, tube} from './art';
+import {FILL, MISSION, ST, SUBTITLE, SUPERVISOR, TAGLINE, TEAM, TITLE, WHAT} from './data';
+import {SALMA, SUP, counter, backdrop, flask, notebookIcon, person, tube} from './art';
 import {Cues, Cursor, Footage, Layer, Svg, Words, hasFootage} from './components';
 import {K, V, ar, back, easeOut, fadeUp, lin, pop, sceneFade} from './lib';
 
 const useT = () => {const {fps} = useVideoConfig(); return useCurrentFrame() / fps;};
 
-export const DUR = {intro: 8.5, team: 7, flow: 10.5, mission: 12, hub: 7.5, method: 8.5, notebook: 13, reveal: 16, outro: 8};
+export const DUR = {intro: 8.5, mission: 12, hub: 7.5, notebook: 13, reveal: 16, outro: 8};
 
 /* ---------- 1. Intro ---------- */
 export const Intro: React.FC = () => {
@@ -21,59 +21,9 @@ export const Intro: React.FC = () => {
       {dest.map((d, i) => {const t0 = 1.1 + i * 0.18, fl = Math.sin(t * 1.3 + i) * 10;
         return <Layer key={i} tx={960} ty={250} html={`<rect x="-55" y="-70" width="110" height="140" rx="8" fill="#fbf6ea" stroke="#127369" stroke-width="4"/><path d="M-35,-35h70M-35,-10h70M-35,15h50" stroke="rgba(18,115,105,.4)" stroke-width="6"/><text x="0" y="56" text-anchor="middle" font-size="30" font-weight="900" fill="#e2584c" font-family="Cairo">؟</text>`}
           style={K(t, [[t0, {o: 0, x: 0, y: 0, r: 0, s: 0.4}], [t0 + 0.2, {o: 1}], [t0 + 1.3, {o: 0.9, x: d[0], y: d[1] + fl, r: d[2], s: 0.9}, easeOut], [8.5, {o: 0.9, x: d[0] * 1.06, y: d[1] + fl, r: d[2] + 6, s: 0.9}]])} />;})}
-      <div className="center" style={{top: 430, ...K(t, fadeUp(1.6))}}><span className="pill">{PHASE}</span></div>
       <div className="center h1" style={{top: 500, ...K(t, [[2.0, {o: 0, s: 1.15, b: 14}], [2.9, {o: 1, s: 1, b: 0}, easeOut]])}}>{TITLE}</div>
       <div className="center h2 amber" style={{top: 680, ...K(t, [[2.8, {o: 0, y: 50}], [3.5, {o: 1, y: 0}, easeOut]])}}>{SUBTITLE}</div>
       <div className="center h3 mint" style={{top: 820, ...K(t, [[3.9, {o: 1, cl: 0}], [5.2, {o: 1, cl: 100}, lin]])}}>{TAGLINE}</div>
-    </AbsoluteFill>
-  );
-};
-
-/* ---------- 2. Team ---------- */
-export const Team: React.FC = () => {
-  const t = useT();
-  return (
-    <AbsoluteFill className="stage" style={sceneFade(t, DUR.team)}>
-      <Cues cues={[[0.6, 'pop'], [0.85, 'pop'], [1.1, 'pop'], [1.35, 'pop'], [2.4, 'swish']]} />
-      <div className="center h3 mint" style={{top: 150, ...K(t, fadeUp(0.3))}}>أعضاء المجموعة</div>
-      {TEAM.map((n, i) => <div key={i} className="abs" style={{left: 1440 - i * 400, top: 270, width: 340, ...K(t, [[0.6 + i * 0.25, {o: 0, y: 80, s: 0.9}], [1.3 + i * 0.25, {o: 1, y: 0, s: 1}, back]])}}>
-        <div className="card" style={{padding: '40px 20px', textAlign: 'center'}}>
-          <div style={{width: 120, height: 120, borderRadius: '50%', margin: '0 auto 18px', background: ['#127369', '#c2577f', '#f4ab3c', '#5b7fd6'][i], color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 60, fontWeight: 900}}>{n[0]}</div>
-          <div style={{fontSize: 40, fontWeight: 900}}>{n}</div></div></div>)}
-      <div className="center" style={{top: 640, ...K(t, fadeUp(2.4, 0.8))}}><div className="h3 mint" style={{fontSize: 36}}>بإشراف</div><div className="h2" style={{marginTop: 6}}>{SUPERVISOR}</div></div>
-    </AbsoluteFill>
-  );
-};
-
-/* ---------- 3. Flow ---------- */
-export const Flow: React.FC = () => {
-  const t = useT();
-  const sx = (i: number) => 1650 - i * 345;
-  const node = (key: string, x: number, y: number, w: number, txt: string, sub: string, col: string, t0: number) =>
-    <div key={key} className="abs" style={{left: x - w / 2, top: y - 50, width: w, height: 100, borderRadius: 20, background: col, color: 'var(--ink)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 30px rgba(0,0,0,.3)', ...K(t, pop(t0))}}>
-      <div style={{fontWeight: 900, fontSize: 32, lineHeight: 1.2}}>{txt}</div><div style={{fontSize: 22, fontWeight: 700, opacity: 0.75}}>{sub}</div></div>;
-  const line = (d: string, t0: number, key: string) => <path key={key} d={d} stroke="#bfe9df" strokeWidth={5} fill="none" markerEnd="url(#ahF)" strokeDasharray={1000}
-    style={K(t, [[t0 - 0.01, {o: 0}], [t0, {dash: 1000, o: 1}], [t0 + 0.7, {dash: 0}]])} />;
-  return (
-    <AbsoluteFill className="stage" style={sceneFade(t, DUR.flow)}>
-      <Cues cues={[[0.6, 'pop'], [1.4, 'pop'], [2.3, 'pop'], [2.52, 'pop'], [2.74, 'pop'], [2.96, 'pop'], [3.18, 'pop'], [4.6, 'pop'], [5.4, 'pop']]} />
-      <div className="center h2" style={{top: 40, fontSize: 60, ...K(t, fadeUp(0.2))}}>مسار التجربة</div>
-      <svg className="abs" width={1920} height={1080} style={{overflow: 'visible'}}>
-        <defs><marker id="ahF" markerUnits="userSpaceOnUse" markerWidth="22" markerHeight="22" refX="16" refY="11" orient="auto"><path d="M0,0 L22,11 L0,22z" fill="#bfe9df" /></marker></defs>
-        {line('M960,235 V300', 1.0, 'a')}
-        {ST.map((_, i) => line(`M960,400 C960,450 ${sx(i)},440 ${sx(i)},500`, 2.0, 'f' + i))}
-        {ST.map((_, i) => <path key={'b' + i} d={`M${sx(i) + 60},545 C${sx(i) + 80},420 ${960 + (sx(i) - 960) * 0.3 + 40},400 985,398`} stroke="#f4ab3c" strokeWidth={4} strokeDasharray="10 10" fill="none"
-          style={{strokeDashoffset: -((t * 30) % 20), ...K(t, [[3.6, {o: 0}], [4.2, {o: 0.85}]])}} />)}
-        {ST.map((_, i) => line(`M${sx(i)},600 C${sx(i)},660 960,640 960,700`, 4.2, 'd' + i))}
-        {line('M960,800 V860', 5.0, 'z')}
-      </svg>
-      {node('n0', 960, 185, 560, 'البداية', 'المشرفة والدفتر الناقص', '#e9e6fb', 0.6)}
-      {node('n1', 960, 350, 520, 'دفتر السلامة', 'مركز التنقل · ٠ / ٥', '#fbf6ea', 1.4)}
-      {ST.map((s, i) => node('s' + i, sx(i), 550, 290, 'المحطة ' + ar(s.n), s.name, '#d6f1e9', 2.3 + i * 0.22))}
-      {node('n2', 960, 750, 420, 'دفتري', 'تثبيت القوانين', '#fde7c2', 4.6)}
-      {node('n3', 960, 910, 460, 'الكشف الختامي', 'تأمل وختام', '#f9d3cd', 5.4)}
-      <div className="abs" style={{left: 60, top: 930, width: 520, fontSize: 26, lineHeight: 1.6, color: 'var(--mint)', ...K(t, fadeUp(6.2))}}>
-        <div>◄ ترتيب المحطات حسب اختيار الطالبة</div><div style={{color: 'var(--amber)'}}>◄ العودة إلى الدفتر بعد كل محطة</div><div>◄ زمن التجربة: ٩–١١ دقيقة</div></div>
     </AbsoluteFill>
   );
 };
@@ -120,25 +70,6 @@ export const Hub: React.FC = () => {
       </div>
       <div className="center" style={{top: 900, ...K(t, pop(3.0))}}><span className="pill" style={{fontSize: 38}}>ابدئي بأي صفحة</span></div>
       <Cursor t={t} path={[[4.2, 500, 1000], [5.6, 1420, 330]]} clicks={[6.4]} />
-    </AbsoluteFill>
-  );
-};
-
-/* ---------- 6. Method ---------- */
-export const Method: React.FC = () => {
-  const t = useT();
-  const steps = [['lens', 'العدسة', 'انقري ما يبدو غير سليم لتجمعي القرائن، وكبّري الملصقات الصغيرة.'], ['rew', 'إعادة الشريط', 'شاهدي ما فعلته سلمى لحظة بلحظة، وأوقفيه عند اللحظة الحرجة.'], ['dec', 'القرار', 'اختاري التصرف المناسب من ثلاثة بدائل لتستعيدي الصفحة.']];
-  return (
-    <AbsoluteFill className="stage" style={sceneFade(t, DUR.method)}>
-      <Cues cues={[[0.8, 'pop'], [1.7, 'pop'], [2.6, 'pop'], [4.4, 'swish']]} />
-      <div className="center h2" style={{top: 110, fontSize: 60, ...K(t, fadeUp(0.2))}}>في كل محطة… ثلاث خطوات</div>
-      {steps.map((s, i) => <div key={i} className="abs card" style={{left: 1300 - i * 560, top: 270, width: 470, height: 480, padding: 36, textAlign: 'center', ...K(t, [[0.8 + i * 0.9, {o: 0, y: 70}], [1.5 + i * 0.9, {o: 1, y: 0}, back]])}}>
-        <div style={{width: 120, height: 120, margin: '0 auto 14px', color: 'var(--teal)'}} dangerouslySetInnerHTML={{__html: ICON[s[0]]}} />
-        <div style={{fontSize: 24, fontWeight: 900, color: 'var(--amber)'}}>الخطوة {ar(i + 1)}</div>
-        <div style={{fontSize: 48, fontWeight: 900}}>{s[1]}</div>
-        <div style={{fontSize: 28, lineHeight: 1.5, marginTop: 8, color: '#36515a'}}>{s[2]}</div></div>)}
-      {[0, 1].map((i) => <div key={i} className="abs" style={{left: 1215 - i * 560, top: 470, fontSize: 70, color: 'var(--amber)', fontWeight: 900, ...K(t, [[1.5 + i * 0.9, {o: 0, x: 20}], [1.9 + i * 0.9, {o: 1, x: 0}]])}}>←</div>)}
-      <div className="center" style={{top: 800, ...K(t, fadeUp(4.4))}}><span className="pill" style={{borderStyle: 'dashed', borderColor: 'var(--amber)', color: '#ffd99a', background: 'rgba(244,171,60,.1)'}}>قرار غير مناسب؟ تعلّمي من الخطأ… وأعيدي المحاولة</span></div>
     </AbsoluteFill>
   );
 };
