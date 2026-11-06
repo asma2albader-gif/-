@@ -112,14 +112,14 @@ export const Reveal: React.FC<{from?: number; interactive?: boolean}> = ({from =
         <div className="center h3 mint" style={{top: 170, ...K(t, fadeUp(0.7))}}>من وراء المخالفات الخمس؟</div>
         {WHAT.map((w, i) => <div key={i} className="abs" style={{left: 1530 - i * 340, top: 300, width: 300, ...K(t, [[1.2 + i * 0.3, {o: 0, y: 60}], [1.7 + i * 0.3, {o: 1, y: 0}, back]])}}>
           <div className="card" style={{padding: 16, textAlign: 'center', overflow: 'hidden'}}>
-            <svg width={268} height={200} viewBox="0 0 268 200" style={{background: '#e3efeb', borderRadius: 16, filter: 'sepia(.5)'}} dangerouslySetInnerHTML={{__html: `<g transform="translate(134,200) scale(.4)">${person({...SALMA, coat: i !== 0, open: i === 0})}</g>`}} />
+            <svg width={268} height={200} viewBox="0 0 268 200" style={{background: '#e3efeb', borderRadius: 16, filter: 'sepia(.5)'}} dangerouslySetInnerHTML={{__html: `<g transform="translate(134,200) scale(.4)">${person({...SALMA, open: i === 0})}</g>`}} />
             <div style={{fontSize: 28, fontWeight: 900, marginTop: 10}}>{w}</div>
             <div style={{marginTop: 8, display: 'inline-block', padding: '4px 18px', borderRadius: 999, background: 'var(--red)', color: '#fff', fontWeight: 900, fontSize: 24, ...K(t, pop(3.4 + i * 0.15, 0.35))}}>مستعجلة</div></div></div>)}
         <div className="center" style={{top: 665, ...K(t, [[4.8, {o: 0, s: 2.4}], [5.2, {o: 1, s: 1}, easeOut]])}}><div style={{display: 'inline-block', padding: '20px 70px', border: '8px solid var(--amber)', borderRadius: 30, transform: 'rotate(-3deg)'}}><span style={{fontSize: 100, fontWeight: 900}} className="amber">الاستعجال</span></div></div>
         <div className="center h3" style={{top: 925, ...K(t, fadeUp(5.8))}}>السبب هو الاستعجال… لا الأشخاص</div>
       </AbsoluteFill>
       <AbsoluteFill style={K(t, [[7.8, {o: 0, s: 1.06}], [8.6, {o: 1, s: 1}, easeOut]])}>
-        {live ? <Footage k="ending" from={7.8 - from} style={{transform: 'scaleX(-1)'}} /> : <>
+        {live ? <Footage k="ending" from={7.8 - from} dur={8} style={{transform: 'scaleX(-1)'}} /> : <>
           <Svg html={backdrop('rv', {}) + counter('rv', 80, 560, 900) + flask(300, 560, '#5fc3a8', 0.8) + tube(420, 560, '#f4ab3c') + tube(460, 560, '#6aa6e8')} />
           <Layer html={person(SUP)} tx={1330} ty={780} cls="p" />
           <Layer html={person({...SALMA, goggles: true})} tx={1620} ty={790} cls="p" style={K(t, [[8.6, {x: 500}], [10, {x: 0}, easeOut]])} />

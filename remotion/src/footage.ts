@@ -13,11 +13,12 @@ export const FOOTAGE: Record<string, string | null> = {
   st3: null, st3_rewind: null,
   st4: null, st4_rewind: null,
   st5: null, st5_rewind: null,
-  ending: 'real_ending.mp4',   // طالبة بمعدات الوقاية في مختبر مرتب (Mixkit #4773)
-  // لقطات حقيقية للتصرف الآمن تظهر بعد كل قرار صحيح (Mixkit)
-  st1_right: 'real_st1_right.mp4', // نظارة واقية عن قرب (#4712)
-  st2_right: 'real_st2_right.mp4', // عمل آمن بنظارة وقفازات (#23903)
+  ending: 'real_ending.mp4',   // تنظر من المجهر ثم تبتسم (Mixkit #21459)
+  // لقطات حقيقية للتصرف الآمن تظهر بعد كل قرار صحيح.
+  // كل اللقطات الحقيقية للممثلة نفسها (سلسلة Mixkit 21452–21461) لتكون «سلمى» شخصية واحدة.
+  st1_right: 'real_st1_right.mp4', // تفحص الأنبوب بالقفازات (#21454)
+  st2_right: 'real_st2_right.mp4', // تعمل بهدوء على المجهر (#21452)
   st3_right: 'real_st3_right.mp4', // يدان جافتان بقفازات (#21460)
-  st4_right: 'real_st4_right.mp4', // فحص العبوة عن قرب (#21454)
-  st5_right: 'real_st5_right.mp4', // عمل حذر بالقفازات (#23140)
+  st4_right: 'real_st4_right.mp4', // تفحص العيّنة عن قرب (#21455)
+  st5_right: 'real_st5_right.mp4', // تتعامل مع الأنابيب بحذر (#21453)
 };

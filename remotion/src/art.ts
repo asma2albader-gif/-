@@ -1,5 +1,5 @@
 // Illustrated fallback art (SVG strings). Used for any scene whose real-footage slot is empty.
-export type PersonOpts = {skin?: string; scarf?: string; coat?: boolean; top?: string; pants?: string; open?: boolean;
+export type PersonOpts = {skin?: string; scarf?: string; hair?: string; coat?: boolean; top?: string; pants?: string; open?: boolean;
   goggles?: boolean; glasses?: boolean; armR?: number; armL?: number; hand?: string; sad?: boolean};
 
 export function person(o: PersonOpts = {}) {
@@ -16,15 +16,21 @@ export function person(o: PersonOpts = {}) {
   <g transform="rotate(${o.armL || 0} -88 -318)"><rect x="-108" y="-322" width="30" height="156" rx="15" fill="${sleeve}" stroke="${stroke}" stroke-width="3"/><circle cx="-93" cy="-162" r="17" fill="${skin}"/></g>
   <path d="M-72,-334 Q-86,-332 -90,-300 L-100,-140 L100,-140 L90,-300 Q86,-332 72,-334 Z" fill="${body}" stroke="${stroke}" stroke-width="3"/>${coatDetail}
   <g transform="rotate(${o.armR || 0} 88 -318)"><rect x="78" y="-322" width="30" height="156" rx="15" fill="${sleeve}" stroke="${stroke}" stroke-width="3"/><circle cx="93" cy="-162" r="17" fill="${skin}"/>${o.hand || ''}</g>
-  <path d="M-64,-392 A64,64 0 0 1 64,-392 L74,-326 Q0,-296 -74,-326 Z" fill="${scarf}"/>
+  ${o.hair
+    ? `<path d="M22,-418 Q78,-410 70,-350 Q66,-318 50,-312 Q60,-350 34,-392Z" fill="${o.hair}"/><circle cx="34" cy="-404" r="9" fill="#c2577f"/>
+       <rect x="-10" y="-344" width="20" height="18" fill="${skin}"/><ellipse cx="0" cy="-390" rx="44" ry="50" fill="${o.hair}"/>`
+    : `<path d="M-64,-392 A64,64 0 0 1 64,-392 L74,-326 Q0,-296 -74,-326 Z" fill="${scarf}"/>`}
   <ellipse cx="0" cy="-386" rx="40" ry="46" fill="${skin}"/>
-  <path d="M-42,-400 Q0,-446 42,-400 Q30,-430 0,-434 Q-30,-430 -42,-400Z" fill="${scarf}"/>
+  ${o.hair
+    ? `<path d="M-44,-388 Q-46,-438 0,-440 Q46,-438 44,-388 Q34,-420 0,-424 Q-30,-422 -44,-388Z" fill="${o.hair}"/>`
+    : `<path d="M-42,-400 Q0,-446 42,-400 Q30,-430 0,-434 Q-30,-430 -42,-400Z" fill="${scarf}"/>`}
   <circle cx="-15" cy="-390" r="4.5" fill="#2b2b2b"/><circle cx="15" cy="-390" r="4.5" fill="#2b2b2b"/>
   <circle cx="-25" cy="-372" r="7" fill="rgba(230,120,120,.25)"/><circle cx="25" cy="-372" r="7" fill="rgba(230,120,120,.25)"/>
   <path d="${o.sad ? 'M-11,-362 Q0,-370 11,-362' : 'M-12,-367 Q0,-357 12,-367'}" stroke="#7a3b2f" stroke-width="3.5" fill="none" stroke-linecap="round"/>${goggles}${glasses}`;
 }
-export const SALMA: PersonOpts = {scarf: '#c2577f', skin: '#f0c4a0', top: '#5b7fd6', pants: '#3a4560'};
-export const MATE: PersonOpts = {scarf: '#3f8f7b', skin: '#d9a982', pants: '#4a3f5c'};
+// Salma matches the real-footage actress (Mixkit 21452–21461): dark hair tied back, purple scrubs.
+export const SALMA: PersonOpts = {hair: '#1f1a1d', skin: '#f0c9a8', top: '#3d33c4', pants: '#3d33c4', coat: false};
+export const MATE: PersonOpts = {hair: '#7a4a2b', skin: '#e8b996', pants: '#4a3f5c'};
 export const SUP: PersonOpts = {scarf: '#127369', skin: '#e9bd98', glasses: true, pants: '#33414f'};
 
 export const flask = (x: number, y: number, c: string, k = 1) => `<g transform="translate(${x},${y}) scale(${k})"><path d="M-10,-70h20v26l26,44q6,12-8,12h-56q-14,0-8-12l26-44z" fill="rgba(255,255,255,.65)" stroke="#7aa" stroke-width="3"/><path d="M-30,-6 l14,-24h32l14,24q4,6-6,6h-48q-10,0-6-6z" fill="${c}"/></g>`;
