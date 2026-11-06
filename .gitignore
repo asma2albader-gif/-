@@ -1,0 +1,4 @@
+node_modules/
+video/out/*
+!video/out/lab-mystery-missing-pages.mp4
+!video/out/soundtrack.m4a

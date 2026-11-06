@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>لغز المختبر: الصفحات المفقودة</title>
+<style>
+@font-face{font-family:Cairo;font-weight:400;src:url(fonts/Cairo-400.ttf)}
+@font-face{font-family:Cairo;font-weight:700;src:url(fonts/Cairo-700.ttf)}
+@font-face{font-family:Cairo;font-weight:900;src:url(fonts/Cairo-900.ttf)}
+@font-face{font-family:Tajawal;font-weight:500;src:url(fonts/Tajawal-500.ttf)}
+@font-face{font-family:Tajawal;font-weight:800;src:url(fonts/Tajawal-800.ttf)}
+:root{
+  --ink:#0a2530; --ink2:#113845; --teal:#127369; --teal2:#1fa595; --mint:#bfe9df;
+  --paper:#fbf6ea; --amber:#f4ab3c; --red:#e2584c; --green:#35b37a; --lav:#e9e6fb;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#000;height:100%;overflow:hidden}
+body{font-family:Cairo,Tajawal,sans-serif;color:#fff}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:0 0;
+  background:radial-gradient(ellipse at 50% 40%,#123f4a 0%,#0a2530 55%,#06171e 100%)}
+.scene{position:absolute;inset:0;display:none}
+.abs{position:absolute}
+.pin{position:absolute;width:0;height:0;display:flex;align-items:center;justify-content:center}
+.pin>*{flex:none}
+svg .p, .person{transform-box:fill-box;transform-origin:50% 100%}
+svg .c{transform-box:fill-box;transform-origin:50% 50%}
+.center{position:absolute;left:0;right:0;text-align:center}
+.h1{font-weight:900;font-size:150px;line-height:1.1}
+.h2{font-weight:900;font-size:72px;line-height:1.2}
+.h3{font-weight:700;font-size:44px;line-height:1.35}
+.body{font-weight:400;font-size:34px;line-height:1.55}
+.pill{display:inline-block;padding:10px 34px;border-radius:999px;background:rgba(31,165,149,.18);border:2px solid rgba(31,165,149,.6);font-weight:700;font-size:32px;color:var(--mint)}
+.amber{color:var(--amber)} .mint{color:var(--mint)}
+.card{background:#fff;color:var(--ink);border-radius:28px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.btn{display:inline-block;padding:18px 56px;border-radius:999px;background:var(--amber);color:var(--ink);font-weight:900;font-size:40px;box-shadow:0 10px 0 #b9761d,0 18px 40px rgba(0,0,0,.35)}
+.chip{white-space:nowrap;padding:10px 26px;border-radius:16px;background:#fff;color:var(--ink);font-weight:700;font-size:30px;border-inline-start:10px solid var(--amber);box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.ring{width:150px;height:150px;border-radius:50%;border:6px solid var(--amber);box-shadow:0 0 0 8px rgba(244,171,60,.25)}
+.cursor{position:absolute;left:0;top:0;width:60px;height:60px;z-index:50}
+/* station */
+.topbar{position:absolute;left:0;right:0;top:0;height:96px;background:linear-gradient(180deg,rgba(6,23,30,.92),rgba(6,23,30,.75));display:flex;align-items:center;justify-content:space-between;padding:0 50px;z-index:20}
+.topbar .ttl{font-weight:900;font-size:38px}
+.steps{display:flex;gap:16px}
+.step{padding:8px 26px;border-radius:999px;font-weight:700;font-size:26px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.55);border:2px solid transparent}
+.step.on{background:var(--amber);color:var(--ink)}
+.counter{font-weight:700;font-size:30px;color:var(--mint);display:flex;align-items:center;gap:12px}
+.vhs{position:absolute;inset:0;pointer-events:none;z-index:15;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 2px,transparent 2px 5px);}
+.vhsband{position:absolute;left:0;right:0;height:60px;background:rgba(255,255,255,.12);filter:blur(6px)}
+.vhstag{position:absolute;top:130px;right:70px;font-family:'DejaVu Sans Mono',monospace;font-weight:700;font-size:44px;color:#fff;text-shadow:0 0 12px rgba(255,255,255,.6);direction:rtl}
+.vhstag .ar{font-family:Cairo}
+.tc{position:absolute;bottom:60px;left:70px;font-family:'DejaVu Sans Mono',monospace;font-size:36px;color:#fff;text-shadow:0 0 10px #fff8}
+.caption{position:absolute;left:0;right:0;bottom:70px;display:flex;justify-content:center}
+.captxt{white-space:nowrap;background:rgba(0,0,0,.78);padding:16px 44px;border-radius:14px;font-size:40px;font-weight:700}
+.dim{position:absolute;inset:0;background:rgba(6,23,30,.8);z-index:25}
+.opt{position:absolute;top:350px;width:520px;height:350px;padding:30px 34px;border-radius:30px;background:#fff;color:var(--ink);font-size:31px;font-weight:700;line-height:1.5;z-index:26;border:6px solid transparent}
+.opt .let{width:66px;height:66px;border-radius:50%;background:var(--ink2);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:36px;margin-bottom:14px}
+.opt .mark{position:absolute;left:24px;top:24px;width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:900;color:#fff}
+.fb{position:absolute;left:0;right:0;top:740px;text-align:center;z-index:27}
+.fbin{display:inline-block;padding:22px 60px;border-radius:24px;background:var(--green);color:#fff;font-weight:900;font-size:50px;box-shadow:0 16px 40px rgba(0,0,0,.35)}
+.fbsub{font-size:36px;font-weight:700;margin-top:14px;color:var(--mint)}
+.page{position:absolute;left:560px;top:150px;width:800px;height:600px;background:var(--paper);color:var(--ink);border-radius:18px;padding:60px 70px;box-shadow:0 30px 80px rgba(0,0,0,.45);
+  background-image:repeating-linear-gradient(180deg,transparent 0 63px,rgba(18,115,105,.18) 63px 65px);z-index:30}
+.page:before{content:"";position:absolute;right:46px;top:0;bottom:0;width:3px;background:rgba(226,88,76,.45)}
+.page .num{font-weight:900;font-size:30px;color:var(--teal)}
+.page .lt{font-weight:900;font-size:52px;line-height:1.3;margin:6px 0 24px}
+.page .law{font-weight:700;font-size:40px;line-height:1.6}
+.slots{position:absolute;left:0;right:0;top:860px;height:140px;z-index:29}
+.slot{position:absolute;top:0;width:220px;height:130px;border-radius:16px;border:3px dashed rgba(191,233,223,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:24px;color:rgba(191,233,223,.8);text-align:center;line-height:1.3}
+.slot.full{border:3px solid var(--teal2);background:var(--teal);color:#fff}
+.slot .ic{font-size:34px;font-weight:900}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+'use strict';
+/* =====================  helpers  ===================== */
+const W=1920,H=1080;
+const ar=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const ease=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+const easeOut=p=>1-Math.pow(1-p,3);
+const back=p=>{const c=1.7;return 1+(c+1)*Math.pow(p-1,3)+c*Math.pow(p-1,2)};
+const lin=p=>p;
+function V(t,kf){ // kf: [[t,v,easeFn?],...]
+  if(t<=kf[0][0])return kf[0][1];
+  const L=kf[kf.length-1]; if(t>=L[0])return L[1];
+  for(let i=0;i<kf.length-1;i++){const a=kf[i],b=kf[i+1];
+    if(t>=a[0]&&t<b[0]){const p=(t-a[0])/(b[0]-a[0]);return a[1]+(b[1]-a[1])*(b[2]||ease)(p)}}
+  return L[1];
+}
+function K(el,t,kf){ if(!el)return; const keys=new Set();kf.forEach(k=>Object.keys(k[1]).forEach(x=>keys.add(x)));
+  const pr={}; for(const key of keys){const fr=kf.filter(k=>key in k[1]).map(k=>[k[0],k[1][key],k[2]]);pr[key]=V(t,fr)} S(el,pr)}
+function S(el,p){ if(!el)return;
+  if('o'in p)el.style.opacity=clamp(p.o,0,1);
+  if('x'in p||'y'in p||'s'in p||'r'in p)el.style.transform=`translate(${p.x||0}px,${p.y||0}px) rotate(${p.r||0}deg) scale(${p.s==null?1:p.s})`;
+  if('b'in p)el.style.filter=p.b>0.01?`blur(${p.b}px)`:'none';
+  if('cl'in p)el.style.clipPath=`inset(-20px -20px -20px ${100-clamp(p.cl,0,100)}%)`;
+  if('dash'in p)el.style.strokeDashoffset=p.dash;
+}
+const pop=(t0,dur=.5)=>[[t0,{o:0,s:.6}],[t0+dur,{o:1,s:1},back]];
+const fadeUp=(t0,d=.6,dy=40)=>[[t0,{o:0,y:dy}],[t0+d,{o:1,y:0},easeOut]];
+function wordify(el){if(el._w)return el._w;const txt=el.textContent.trim();el.innerHTML=txt.split(/\s+/).map(w=>`<span>${w}</span>`).join(' ');el._w=[...el.children];return el._w}
+function revealWords(el,t,t0,t1){const ws=wordify(el),n=ws.length;ws.forEach((w,i)=>{const a=t0+(t1-t0)*i/n;w.style.opacity=clamp((t-a)/.22,0,1)})}
+const html=s=>{const d=document.createElement('div');d.innerHTML=s.trim();return d.firstElementChild};
+
+/* =====================  SVG art  ===================== */
+function person(o={}){
+  const skin=o.skin||'#f2c7a5', scarf=o.scarf||'#7d5ba6', coat=o.coat!==false, top=o.top||'#4f7bd0', pants=o.pants||'#3b4a63';
+  const sleeve=coat?'#ffffff':top, body=coat?'#ffffff':top;
+  const shoes=o.open
+   ? `<ellipse cx="-24" cy="-6" rx="22" ry="8" fill="${skin}"/><ellipse cx="22" cy="-6" rx="22" ry="8" fill="${skin}"/>
+      <path d="M-40,-8h34M4,-8h34" stroke="#c0574a" stroke-width="5"/><path d="M-44,0h44M0,0h44" stroke="#7a3b2f" stroke-width="5"/>`
+   : `<rect x="-46" y="-18" width="44" height="20" rx="10" fill="#2a2f3a"/><rect x="2" y="-18" width="44" height="20" rx="10" fill="#2a2f3a"/>`;
+  const goggles=o.goggles?`<rect x="-38" y="-404" width="76" height="24" rx="11" fill="rgba(140,220,255,.55)" stroke="#2f6f96" stroke-width="4"/>`:'';
+  const glasses=o.glasses?`<circle cx="-15" cy="-392" r="12" fill="none" stroke="#333" stroke-width="3.5"/><circle cx="15" cy="-392" r="12" fill="none" stroke="#333" stroke-width="3.5"/><path d="M-3,-392h6" stroke="#333" stroke-width="3"/>`:'';
+  const coatDetail=coat?`<path d="M0,-326 L-26,-270 M0,-326 L26,-270" stroke="#cfd8dc" stroke-width="5" fill="none"/><path d="M0,-300V-160" stroke="#cfd8dc" stroke-width="3"/><rect x="34" y="-230" width="34" height="26" rx="5" fill="none" stroke="#cfd8dc" stroke-width="3"/>`:'';
+  const armR=o.armR||0, armL=o.armL||0;
+  return `<g class="person">
+  <ellipse cx="0" cy="2" rx="80" ry="13" fill="rgba(0,0,0,.18)"/>
+  <rect x="-36" y="-172" width="30" height="164" rx="12" fill="${pants}"/><rect x="6" y="-172" width="30" height="164" rx="12" fill="${pants}"/>
+  ${shoes}
+  <g transform="rotate(${armL} -88 -318)"><rect x="-108" y="-322" width="30" height="156" rx="15" fill="${sleeve}" stroke="${coat?'#d5dde0':'none'}" stroke-width="3"/><circle cx="-93" cy="-162" r="17" fill="${skin}"/></g>
+  <path d="M-72,-334 Q-86,-332 -90,-300 L-100,-140 L100,-140 L90,-300 Q86,-332 72,-334 Z" fill="${body}" stroke="${coat?'#d5dde0':'none'}" stroke-width="3"/>
+  ${coatDetail}
+  <g class="armR" transform="rotate(${armR} 88 -318)"><rect x="78" y="-322" width="30" height="156" rx="15" fill="${sleeve}" stroke="${coat?'#d5dde0':'none'}" stroke-width="3"/><circle cx="93" cy="-162" r="17" fill="${skin}"/>${o.hand||''}</g>
+  <path d="M-64,-392 A64,64 0 0 1 64,-392 L74,-326 Q0,-296 -74,-326 Z" fill="${scarf}"/>
+  <ellipse cx="0" cy="-386" rx="40" ry="46" fill="${skin}"/>
+  <path d="M-42,-400 Q0,-446 42,-400 Q30,-430 0,-434 Q-30,-430 -42,-400Z" fill="${scarf}"/>
+  <circle cx="-15" cy="-390" r="4.5" fill="#2b2b2b"/><circle cx="15" cy="-390" r="4.5" fill="#2b2b2b"/>
+  <circle cx="-25" cy="-372" r="7" fill="rgba(230,120,120,.25)"/><circle cx="25" cy="-372" r="7" fill="rgba(230,120,120,.25)"/>
+  <path d="${o.sad?'M-11,-362 Q0,-370 11,-362':'M-12,-367 Q0,-357 12,-367'}" stroke="#7a3b2f" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  ${goggles}${glasses}
+  </g>`;
+}
+const SALMA={scarf:'#c2577f',skin:'#f0c4a0',top:'#5b7fd6',pants:'#3a4560'};
+const MATE={scarf:'#3f8f7b',skin:'#d9a982',pants:'#4a3f5c'};
+const SUP={scarf:'#127369',skin:'#e9bd98',glasses:true,pants:'#33414f'};
+function flask(x,y,c,k=1){return `<g transform="translate(${x},${y}) scale(${k})"><path d="M-10,-70h20v26l26,44q6,12-8,12h-56q-14,0-8-12l26-44z" fill="rgba(255,255,255,.65)" stroke="#7aa" stroke-width="3"/><path d="M-30,-6 l14,-24h32l14,24q4,6-6,6h-48q-10,0-6-6z" fill="${c}"/></g>`}
+function tube(x,y,c){return `<g transform="translate(${x},${y})"><rect x="-9" y="-60" width="18" height="60" rx="9" fill="rgba(255,255,255,.7)" stroke="#7aa" stroke-width="3"/><rect x="-6" y="-26" width="12" height="23" rx="6" fill="${c}"/></g>`}
+let BDN=0, CUR_U='g0';
+function backdrop(o={}){
+  const u='g'+(++BDN); CUR_U=u;
+  return `<defs>
+  <linearGradient id="wall${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8f3ef"/><stop offset="1" stop-color="#d2e6df"/></linearGradient>
+  <linearGradient id="floor${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8cbc7"/><stop offset="1" stop-color="#93aaa6"/></linearGradient>
+  <linearGradient id="counter${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b4b55"/><stop offset="1" stop-color="#2b3740"/></linearGradient>
+  <linearGradient id="cab${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7fbfa"/><stop offset="1" stop-color="#dce8e5"/></linearGradient>
+  </defs>
+  <rect width="1920" height="760" fill="url(#wall${CUR_U})"/>
+  <g stroke="rgba(18,115,105,.07)" stroke-width="2">${Array.from({length:24},(_,i)=>`<path d="M${i*84},0V740"/>`).join('')}${Array.from({length:9},(_,i)=>`<path d="M0,${i*84}H1920"/>`).join('')}</g>
+  <rect y="736" width="1920" height="344" fill="url(#floor${CUR_U})"/>
+  <g stroke="rgba(255,255,255,.25)" stroke-width="2">${Array.from({length:13},(_,i)=>`<path d="M${960+(i-6)*170},740 L${960+(i-6)*420},1080"/>`).join('')}<path d="M0,820H1920M0,930H1920"/></g>
+  <rect y="726" width="1920" height="16" fill="#8aa7a1"/>
+  ${o.window!==false?`<g><rect x="110" y="110" width="330" height="250" rx="10" fill="#b9e2f2" stroke="#fff" stroke-width="14"/><path d="M275,110V360M110,235H440" stroke="#fff" stroke-width="10"/><path d="M140,330 L220,250 L260,290 L330,210 L420,300" stroke="rgba(255,255,255,.6)" stroke-width="6" fill="none"/></g>`:''}
+  ${o.shelf!==false?`<g><rect x="1390" y="250" width="440" height="16" rx="4" fill="#9fb6b1"/>${flask(1450,250,'#5fc3a8')}${flask(1540,250,'#f4ab3c',.8)}${tube(1620,250,'#e2584c')}${tube(1650,250,'#7d5ba6')}${flask(1740,250,'#6aa6e8',.9)}</g>`:''}`;
+}
+function counter(x,y,w,o={}){ // lab bench front at y (top)
+  return `<g><rect x="${x}" y="${y}" width="${w}" height="26" rx="6" fill="url(#counter${CUR_U})"/><rect x="${x+14}" y="${y+26}" width="${w-28}" height="${740-y-26}" fill="url(#cab${CUR_U})" stroke="#c6d6d2" stroke-width="3"/>
+  ${Array.from({length:Math.floor((w-28)/180)},(_,i)=>`<rect x="${x+24+i*180}" y="${y+46}" width="160" height="${740-y-70}" rx="8" fill="none" stroke="#c6d6d2" stroke-width="3"/><rect x="${x+90+i*180}" y="${y+66}" width="28" height="8" rx="4" fill="#9fb6b1"/>`).join('')}</g>`;
+}
+function sink(x,y){return `<g><rect x="${x}" y="${y-6}" width="230" height="22" rx="8" fill="#a9bcc3"/><rect x="${x+20}" y="${y}" width="190" height="14" rx="6" fill="#6f848c"/><path d="M${x+115},${y-6} v-70 q0,-26 -26,-26 h-30" stroke="#9aaeb5" stroke-width="16" fill="none" stroke-linecap="round"/><rect x="${x+150}" y="${y-30}" width="16" height="26" rx="5" fill="#9aaeb5"/></g>`}
+function hazard(x,y,k=1){return `<g transform="translate(${x},${y}) scale(${k})"><rect x="-50" y="-50" width="100" height="100" transform="rotate(45)" fill="#fff" stroke="#d6312a" stroke-width="10"/><path d="M-26,-14 l10,-12 l10,12 M8,-14 l10,-12 l10,12" stroke="#222" stroke-width="5" fill="none"/><path d="M-22,-4 q-4,10 2,14 M18,-4 q-4,10 2,14" stroke="#222" stroke-width="4" fill="none"/><rect x="-34" y="20" width="68" height="8" fill="#222"/></g>`}
+function notebookIcon(x,y,k=1){return `<g transform="translate(${x},${y}) scale(${k})"><path d="M0,-90 Q-80,-120 -170,-96 V96 Q-80,72 0,100 Q80,72 170,96 V-96 Q80,-120 0,-90Z" fill="#fbf6ea" stroke="#127369" stroke-width="8"/><path d="M0,-90V100" stroke="#127369" stroke-width="6"/>${[0,1,2,3].map(i=>`<path d="M-140,${-50+i*36} Q-75,${-66+i*36} -24,${-50+i*36} M24,${-50+i*36} Q75,${-66+i*36} 140,${-50+i*36}" stroke="rgba(18,115,105,.35)" stroke-width="6" fill="none"/>`).join('')}</g>`}
+const ICON={
+ lens:`<svg viewBox="0 0 100 100" width="100%" height="100%"><circle cx="42" cy="42" r="28" fill="rgba(191,233,223,.35)" stroke="currentColor" stroke-width="9"/><path d="M63,63 L88,88" stroke="currentColor" stroke-width="13" stroke-linecap="round"/></svg>`,
+ rew:`<svg viewBox="0 0 100 100" width="100%" height="100%"><path d="M48,22 L10,50 L48,78Z M90,22 L52,50 L90,78Z" fill="currentColor"/></svg>`,
+ dec:`<svg viewBox="0 0 100 100" width="100%" height="100%"><circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="9"/><path d="M30,52 L45,66 L72,36" stroke="currentColor" stroke-width="11" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+};
+const CURSOR=`<svg class="cursor" viewBox="0 0 60 60"><path d="M8,4 L8,48 L20,37 L28,56 L36,52 L28,34 L44,34 Z" fill="#fff" stroke="#0a2530" stroke-width="3.5" stroke-linejoin="round"/></svg>`;
+const MAG=`<svg viewBox="0 0 200 200" width="200" height="200" style="overflow:visible"><circle cx="90" cy="90" r="64" fill="rgba(191,233,223,.18)" stroke="#f4ab3c" stroke-width="14"/><circle cx="90" cy="90" r="64" fill="none" stroke="#fff" stroke-width="3" opacity=".7"/><path d="M137,137 L186,186" stroke="#0a2530" stroke-width="26" stroke-linecap="round"/><path d="M137,137 L186,186" stroke="#f4ab3c" stroke-width="16" stroke-linecap="round"/></svg>`;
+
+/* =====================  timeline & cues  ===================== */
+const SCENES=[]; const CUES=[];
+let clock=0;
+function addScene(dur,build,update,cues=[]){const el=document.createElement('div');el.className='scene';document.getElementById('stage').appendChild(el);
+  const sc={start:clock,dur,el};build(el,sc);sc.update=update;SCENES.push(sc);cues.forEach(c=>CUES.push({t:+(clock+c[0]).toFixed(3),type:c[1]}));clock+=dur;return sc}
+const q=(el,s)=>el.querySelector(s), qa=(el,s)=>[...el.querySelectorAll(s)];
+function sceneFade(sc,t){K(sc.el,t,[[0,{o:0}],[.45,{o:1}],[sc.dur-.45,{o:1}],[sc.dur,{o:0}]])}
+function cursorTo(el,t,path){ // path: [[t,x,y],...], clicks:[t]
+  const x=V(t,path.map(p=>[p[0],p[1]])),y=V(t,path.map(p=>[p[0],p[2]]));
+  let s=1; (el._clicks||[]).forEach(c=>{if(t>c&&t<c+.25)s=1-.25*Math.sin((t-c)/.25*Math.PI)});
+  S(el,{x,y,s,o:V(t,[[path[0][0]-.3,0],[path[0][0],1]])});
+}
+
+/* ---------- 1. INTRO ---------- */
+addScene(8.5,el=>{
+  el.innerHTML=`
+  <svg class="abs" width="1920" height="1080" viewBox="0 0 1920 1080">
+    <g id="glow"><circle cx="960" cy="420" r="420" fill="rgba(31,165,149,.12)"/></g>
+    <g transform="translate(960,250)"><g id="nb" class="c">${notebookIcon(0,0,.9)}</g></g>
+    ${[0,1,2,3,4].map(i=>`<g transform="translate(960,250)"><g class="fp c"><rect x="-55" y="-70" width="110" height="140" rx="8" fill="#fbf6ea" stroke="#127369" stroke-width="4"/><path d="M-35,-35h70M-35,-10h70M-35,15h50" stroke="rgba(18,115,105,.4)" stroke-width="6"/><text x="0" y="56" text-anchor="middle" font-size="30" font-weight="900" fill="#e2584c" font-family="Cairo">؟</text></g></g>`).join('')}
+  </svg>
+  <div class="center" style="top:430px"><span class="pill" id="ph">المرحلة الثانية · بناء مخطط المنتج والتفاعل</span></div>
+  <div class="center h1" style="top:500px" id="t1">لغز المختبر</div>
+  <div class="center h2 amber" style="top:680px" id="t2">الصفحات المفقودة</div>
+  <div class="center h3 mint" style="top:820px" id="t3">اكتشفي القانون … أعيدي الصفحة</div>`;
+},function(t){sceneFade(this,t);const e=this.el;
+  K(q(e,'#nb'),t,[[0,{o:0,s:.5,r:-8}],[.9,{o:1,s:1,r:0},back]]);
+  const fp=qa(e,'.fp'),dest=[[-640,-130,-30],[-480,150,22],[420,-160,18],[650,90,-26],[-790,380,12]];
+  fp.forEach((p,i)=>{const t0=1.1+i*.18,d=dest[i],fl=Math.sin(t*1.3+i)*10;
+    K(p,t,[[t0,{o:0,x:0,y:0,r:0,s:.4}],[t0+.2,{o:1}],[t0+1.3,{o:.9,x:d[0],y:d[1]+fl,r:d[2],s:.9},easeOut],[8.5,{o:.9,x:d[0]*1.06,y:d[1]+fl,r:d[2]+6,s:.9}]])});
+  K(q(e,'#ph'),t,fadeUp(1.6));
+  K(q(e,'#t1'),t,[[2.0,{o:0,s:1.15,b:14}],[2.9,{o:1,s:1,b:0},easeOut]]);
+  K(q(e,'#t2'),t,[[2.8,{o:0,y:50}],[3.5,{o:1,y:0},easeOut]]);
+  K(q(e,'#t3'),t,[[3.9,{o:1,cl:0}],[5.2,{o:1,cl:100},lin]]);
+},[[0.1,'whoosh'],[1.1,'swish'],[2.0,'boom'],[2.8,'pop'],[3.9,'shimmer']]);
+
+/* ---------- 2. TEAM ---------- */
+const TEAM=['أسماء البدر','لينا المانع','فنون السواط','مها العجمي'];
+addScene(7,el=>{
+  el.innerHTML=`<div class="center h3 mint" style="top:150px" id="hd">أعضاء المجموعة</div>
+  ${TEAM.map((n,i)=>`<div class="abs tm" style="left:${1440-i*400}px;top:270px;width:340px"><div class="card" style="padding:40px 20px;text-align:center">
+     <div style="width:120px;height:120px;border-radius:50%;margin:0 auto 18px;background:${['#127369','#c2577f','#f4ab3c','#5b7fd6'][i]};color:#fff;display:flex;align-items:center;justify-content:center;font-size:60px;font-weight:900">${n[0]}</div>
+     <div style="font-size:40px;font-weight:900">${n}</div></div></div>`).join('')}
+  <div class="center" style="top:640px" id="sv"><div class="h3 mint" style="font-size:36px">بإشراف</div><div class="h2" style="margin-top:6px">الدكتورة خولة الدويش</div></div>`;
+},function(t){sceneFade(this,t);const e=this.el;K(q(e,'#hd'),t,fadeUp(.3));
+  qa(e,'.tm').forEach((c,i)=>K(c,t,[[.6+i*.25,{o:0,y:80,s:.9}],[1.3+i*.25,{o:1,y:0,s:1},back]]));
+  K(q(e,'#sv'),t,fadeUp(2.4,.8));
+},[[.6,'pop'],[.85,'pop'],[1.1,'pop'],[1.35,'pop'],[2.4,'swish']]);
+
+/* ---------- 3. FLOW ---------- */
+const ST=[
+ {n:1,ord:'الأولى',name:'الباب',law:'قانون الدخول والوقاية',short:'الدخول',
+  clues:[['كوب في يد سلمى',1530,500,-130],['غياب النظارة والمعطف',560,430],['حذاء مفتوح',1350,742,-10]],
+  rew:'سلمى تدخل مستعجلة وفي يدها كوب',
+  opts:['أدعها تدخل لأن عملها سريع','أطلب منها التوقف قبل الباب، وترك الكوب خارج المختبر، وارتداء المعطف والنظارة والحذاء المغلق','أعطيها نظارة وأتركها تدخل بالكوب'],
+  page:'تُرتدى معدات الوقاية قبل الدخول، ولا يدخل أحد المختبر بطعام أو شراب.',why:'الوقاية تبدأ قبل الباب.',
+  wrong:{say:'انسكب الشراب على أرض المختبر، ودخلت سلمى بلا وقاية.',hint:'تلميح: انظري مجددًا إلى ما في يد سلمى وما ترتديه.'}},
+ {n:2,ord:'الثانية',name:'الممر',law:'قانون الممرات',short:'الممرات',
+  clues:[['حقيبة في الممر',960,690],['علامة مخرج الطوارئ',960,205],['معدات سلامة محجوبة',1225,600]],
+  rew:'سلمى تضع حقيبتها في الممر وتمضي مستعجلة',
+  opts:['أتركها لأنها مؤقتة','أنقلها إلى المكان المخصص للحقائب وأُفرغ الممر','أدفعها بقدمي إلى جانب الممر'],
+  page:'تبقى الممرات والمخارج ومعدات الطوارئ خالية دائمًا.',why:'الممر الخالي طريق نجاة عند الطوارئ.'},
+ {n:3,ord:'الثالثة',name:'الكهرباء والماء',law:'قانون الكهرباء والماء',short:'الكهرباء',
+  clues:[['وصلة ممدودة قرب الحوض',800,540,-125],['قطرات ماء على الطاولة',1010,545,120],['جهاز موصول',1300,470,-125]],
+  rew:'سلمى تمدّ الوصلة قرب الحوض وتبتعد',
+  opts:['أترك الوصلة وأمسح الماء فقط','أتأكد أن يديّ جافتان، ثم أُبعد الوصلة عن الحوض وأخبر المشرفة','أحرك الوصلة بسرعة قبل أن أجفف يديّ'],
+  page:'تُبعد الأجهزة والوصلات الكهربائية عن الماء، ولا تُلمس باليد المبللة.',why:'الماء والكهرباء لا يجتمعان.'},
+ {n:4,ord:'الرابعة',name:'المادة المنسكبة',law:'قانون المادة المجهولة',short:'المادة المجهولة',
+  clues:[['بقعة سائل بلا اسم واضح',980,850],['زميلة تهمّ بالمسح',600,480],['عبوة عليها ملصق صغير',1400,470]],lens:true,
+  rew:'سلمى ترى البقعة فتمسحها بمنديل دون قراءة الملصق',
+  opts:['أمسحها بمنديل فورًا','لا أنظفها: أقرأ الملصق والرمز، وأُبعد الزميلات، وأبلغ المشرفة','أغطيها بورق وأمضي'],
+  page:'لا تُنظَّف مادة مجهولة قبل معرفة نوعها: اقرئي الملصق ورمز التحذير، وأبعدي الأخريات، وأبلغي المشرفة.',why:'المعرفة تسبق التنظيف.'},
+ {n:5,ord:'الخامسة',name:'الزجاج المكسور',law:'قانون الزجاج المكسور',short:'الزجاج',
+  clues:[['قطع زجاج متناثرة',990,800],['زميلة تهمّ بجمعها بيدها',1460,470],['ممر قريب',520,940]],
+  rew:'سلمى تُسقط أنبوبًا فتجمع القطع بيدها وتواصل عملها',
+  opts:['أجمع القطع بيدي بسرعة','لا ألمسها: أؤمّن المكان بإبعاد الزميلات، وأبلغ المشرفة لتجمعها بالأداة المخصصة','أركلها بقدمي بعيدًا'],
+  page:'لا يُلمس الزجاج المكسور باليد؛ يُؤمَّن المكان ويُبلَّغ عنه ليُجمع بالأداة المخصصة.',why:'الأداة المخصصة تحمي يديكِ.'},
+];
+addScene(10.5,el=>{
+  const node=(id,x,y,w,txt,sub,col)=>`<div class="abs fn" id="${id}" style="left:${x-w/2}px;top:${y-50}px;width:${w}px;height:100px;border-radius:20px;background:${col};color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 12px 30px rgba(0,0,0,.3)"><div style="font-weight:900;font-size:32px;line-height:1.2">${txt}</div>${sub?`<div style="font-size:22px;font-weight:700;opacity:.75">${sub}</div>`:''}</div>`;
+  const sx=i=>1650-i*345;
+  el.innerHTML=`<div class="center h2" style="top:40px;font-size:60px" id="hd">مسار التجربة</div>
+  <svg class="abs" width="1920" height="1080" style="overflow:visible">
+    <defs><marker id="ah" markerUnits="userSpaceOnUse" markerWidth="22" markerHeight="22" refX="16" refY="11" orient="auto"><path d="M0,0 L22,11 L0,22z" fill="#bfe9df"/></marker></defs>
+    <path class="ln" d="M960,235 V300" stroke="#bfe9df" stroke-width="5" fill="none" marker-end="url(#ah)"/>
+    ${ST.map((s,i)=>`<path class="ln fwd" d="M960,400 C960,450 ${sx(i)},440 ${sx(i)},500" stroke="#bfe9df" stroke-width="5" fill="none" marker-end="url(#ah)"/><path class="ln bk" d="M${sx(i)+60},545 C${sx(i)+80},420 ${960+(sx(i)-960)*.3+40},400 ${985},398" stroke="#f4ab3c" stroke-width="4" stroke-dasharray="10 10" fill="none" opacity=".8"/>`).join('')}
+    ${ST.map((s,i)=>`<path class="ln dn" d="M${sx(i)},600 C${sx(i)},660 960,640 960,700" stroke="#bfe9df" stroke-width="5" fill="none" marker-end="url(#ah)"/>`).join('')}
+    <path class="ln" d="M960,800 V860" stroke="#bfe9df" stroke-width="5" fill="none" marker-end="url(#ah)"/>
+  </svg>
+  ${node('n0',960,185,560,'البداية','المشرفة والدفتر الناقص','#e9e6fb')}
+  ${node('n1',960,350,520,'دفتر السلامة','مركز التنقل · ٠ / ٥','#fbf6ea')}
+  ${ST.map((s,i)=>node('s'+i,sx(i),550,290,'المحطة '+ar(s.n),s.name,'#d6f1e9')).join('')}
+  ${node('n2',960,750,420,'دفتري','تثبيت القوانين','#fde7c2')}
+  ${node('n3',960,910,460,'الكشف الختامي','تأمل وختام','#f9d3cd')}
+  <div class="abs" id="note" style="left:60px;top:930px;width:520px;font-size:26px;line-height:1.6;color:var(--mint)">
+   <div>◄ ترتيب المحطات حسب اختيار الطالبة</div><div style="color:var(--amber)">◄ العودة إلى الدفتر بعد كل محطة</div><div>◄ زمن التجربة: ٩–١١ دقيقة</div></div>`;
+  qa(el,'.ln').forEach(p=>{const L=p.getTotalLength?1000:1000;p.style.strokeDasharray=p.classList.contains('bk')?'10 10':'1000';});
+},function(t){sceneFade(this,t);const e=this.el;K(q(e,'#hd'),t,fadeUp(.2));
+  K(q(e,'#n0'),t,pop(.6));K(q(e,'#n1'),t,pop(1.4));
+  ST.forEach((s,i)=>K(q(e,'#s'+i),t,pop(2.3+i*.22)));
+  K(q(e,'#n2'),t,pop(4.6));K(q(e,'#n3'),t,pop(5.4));K(q(e,'#note'),t,fadeUp(6.2));
+  const lines=qa(e,'.ln');
+  lines.forEach(p=>{let t0;
+    if(p.classList.contains('fwd'))t0=2.0;else if(p.classList.contains('bk'))t0=3.6;else if(p.classList.contains('dn'))t0=4.2;else t0=(p.getAttribute('d').startsWith('M960,235')?1.0:5.0);
+    if(p.classList.contains('bk')){K(p,t,[[t0,{o:0}],[t0+.6,{o:.85}]]);p.style.strokeDashoffset=-((t*30)%20);}
+    else K(p,t,[[t0-.01,{o:0}],[t0,{dash:1000,o:1}],[t0+.7,{dash:0}]]);});
+},[[.6,'pop'],[1.4,'pop'],[2.3,'pop'],[2.52,'pop'],[2.74,'pop'],[2.96,'pop'],[3.18,'pop'],[4.6,'pop'],[5.4,'pop']]);
+
+/* ---------- 4. MISSION ---------- */
+addScene(12,el=>{
+  el.innerHTML=`<svg class="abs" width="1920" height="1080" viewBox="0 0 1920 1080">${backdrop({shelf:true})}
+   ${counter(1000,560,800)}
+   <g transform="translate(420,760)"><g id="sup" class="p">${person({...SUP,armR:-28,hand:'<rect x="96" y="-210" width="70" height="90" rx="8" fill="#f4ab3c" transform="rotate(10 120 -170)"/>'})}</g></g>
+   <g transform="translate(1400,540)"><g id="book" class="c">${notebookIcon(0,0,.55)}</g></g>
+   ${[0,1,2,3,4].map(i=>`<g transform="translate(1400,540)"><g class="fly c"><rect x="-38" y="-48" width="76" height="96" rx="6" fill="#fbf6ea" stroke="#127369" stroke-width="4"/><path d="M-24,-20h48M-24,0h48M-24,20h30" stroke="rgba(18,115,105,.4)" stroke-width="5"/></g></g>`).join('')}
+  </svg>
+  <div class="abs card" id="bub" style="left:640px;top:150px;width:1080px;padding:44px 56px;border-radius:36px">
+    <div style="font-weight:900;font-size:30px;color:var(--teal)">المشرفة</div>
+    <div id="say" style="font-size:44px;font-weight:700;line-height:1.6">«وجدنا دفتر السلامة وقد سقطت منه خمس صفحات، وسيصل الطلاب الجدد قريبًا. ساعديني في استعادتها.»</div>
+    <svg class="abs" style="right:auto;left:-50px;bottom:40px" width="70" height="60"><path d="M70,0 L0,40 L70,50Z" fill="#fff"/></svg>
+  </div>
+  <div class="center" style="top:900px" id="go"><span class="btn">ابدئي التحقيق</span></div>
+  ${CURSOR}`;
+  q(el,'.cursor')._clicks=[10.6];
+},function(t){sceneFade(this,t);const e=this.el;
+  K(q(e,'#sup'),t,[[0,{x:-500}],[1.4,{x:0},easeOut]]);
+  K(q(e,'#bub'),t,[[1.3,{o:0,s:.85}],[1.8,{o:1,s:1},back]]);
+  revealWords(q(e,'#say'),t,1.8,5.4);
+  K(q(e,'#book'),t,[[6.0,{r:0}],[6.2,{r:-6}],[6.4,{r:6}],[6.6,{r:0}]]);
+  qa(e,'.fly').forEach((p,i)=>{const t0=6.5+i*.2,dx=[-520,-260,120,380,560][i],dy=[-420,-560,-600,-480,-300][i];
+    K(p,t,[[t0,{o:0,x:0,y:0,r:0}],[t0+.1,{o:1}],[t0+1.6,{o:.0,x:dx,y:dy,r:(i%2?1:-1)*220},easeOut]])});
+  K(q(e,'#go'),t,pop(8.6));
+  const g=q(e,'#go .btn');if(t>8.6)S(g,{s:1+.04*Math.sin((t-8.6)*6)});
+  cursorTo(q(e,'.cursor'),t,[[9.2,1300,1080],[10.4,960,930]]);
+},[[1.3,'pop'],[1.8,'type'],[6.5,'swish'],[6.7,'swish'],[8.6,'pop'],[10.6,'click'],[11.4,'whoosh']]);
+
+/* ---------- 5. HUB (notebook) ---------- */
+function slotsHTML(filled){return `<div class="slots">${ST.map((s,i)=>`<div class="slot ${i<filled?'full':''}" data-i="${i}" style="left:${350+(4-i)*250}px"><div class="ic">${i<filled?'✓':ar(s.n)}</div><div>${s.name}</div></div>`).join('')}</div>`}
+addScene(7.5,el=>{
+  el.innerHTML=`<div class="center h2" style="top:70px;font-size:62px" id="hd">دفتر قوانين السلامة</div>
+  <div class="abs" id="book" style="left:260px;top:200px;width:1400px;height:640px;border-radius:30px;background:var(--paper);box-shadow:0 30px 80px rgba(0,0,0,.5);color:var(--ink)">
+    <div class="abs" style="left:698px;top:0;bottom:0;width:4px;background:rgba(18,115,105,.35)"></div>
+    ${ST.map((s,i)=>{const col=i<3?0:1,row=i<3?i:i-3;const x=col===0?760:80, y=50+row*190;
+      return `<div class="abs hs" style="left:${x}px;top:${y}px;width:560px;height:160px;border:4px dashed #b7cfc9;border-radius:20px;display:flex;align-items:center;gap:26px;padding:0 30px">
+        <div style="width:90px;height:90px;border-radius:50%;background:#e3f1ed;color:var(--teal);font-size:48px;font-weight:900;display:flex;align-items:center;justify-content:center">${ar(s.n)}</div>
+        <div><div style="font-size:38px;font-weight:900">${s.name}</div><div style="font-size:26px;font-weight:700;color:var(--red)">صفحة مفقودة…</div></div></div>`}).join('')}
+    <div class="abs" style="left:80px;top:440px;width:560px;height:160px;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;color:var(--teal)" id="cnt">الصفحات المستعادة ٠ / ٥</div>
+  </div>
+  <div class="center" style="top:900px" id="hint"><span class="pill" style="font-size:38px">ابدئي بأي صفحة</span></div>
+  ${CURSOR}`;
+  q(el,'.cursor')._clicks=[6.4];
+},function(t){sceneFade(this,t);const e=this.el;K(q(e,'#hd'),t,fadeUp(.2));
+  K(q(e,'#book'),t,[[.2,{o:0,y:60,s:.92}],[1.0,{o:1,y:0,s:1},easeOut]]);
+  qa(e,'.hs').forEach((h,i)=>K(h,t,pop(1.1+i*.2,.45)));K(q(e,'#cnt'),t,fadeUp(2.3));
+  K(q(e,'#hint'),t,pop(3.0));
+  const h0=qa(e,'.hs')[0];h0.style.borderColor=t>5.6?'#f4ab3c':'#b7cfc9';h0.style.background=t>5.6?'rgba(244,171,60,.12)':'transparent';
+  cursorTo(q(e,'.cursor'),t,[[4.2,500,1000],[5.6,1420,330]]);
+},[[1.1,'pop'],[1.3,'pop'],[1.5,'pop'],[1.7,'pop'],[1.9,'pop'],[3.0,'pop'],[6.4,'click'],[7.0,'whoosh']]);
+
+/* ---------- 6. METHOD ---------- */
+addScene(8.5,el=>{
+  const steps=[['lens','العدسة','انقري ما يبدو غير سليم لتجمعي القرائن، وكبّري الملصقات الصغيرة.'],['rew','إعادة الشريط','شاهدي ما فعلته سلمى لحظة بلحظة، وأوقفيه عند اللحظة الحرجة.'],['dec','القرار','اختاري التصرف المناسب من ثلاثة بدائل لتستعيدي الصفحة.']];
+  el.innerHTML=`<div class="center h2" style="top:110px;font-size:60px" id="hd">في كل محطة… ثلاث خطوات</div>
+  ${steps.map((s,i)=>`<div class="abs card ms" style="left:${1300-i*560}px;top:270px;width:470px;height:480px;padding:36px;text-align:center">
+     <div style="width:120px;height:120px;margin:0 auto 14px;color:var(--teal)">${ICON[s[0]]}</div>
+     <div style="font-size:24px;font-weight:900;color:var(--amber)">الخطوة ${ar(i+1)}</div>
+     <div style="font-size:48px;font-weight:900">${s[1]}</div>
+     <div style="font-size:28px;line-height:1.5;margin-top:8px;color:#36515a">${s[2]}</div></div>`).join('')}
+  ${[0,1].map(i=>`<div class="abs ar2" style="left:${1215-i*560}px;top:470px;font-size:70px;color:var(--amber);font-weight:900">←</div>`).join('')}
+  <div class="center" style="top:800px" id="ft"><span class="pill" style="border-style:dashed;border-color:var(--amber);color:#ffd99a;background:rgba(244,171,60,.1)">قرار غير مناسب؟ تعلّمي من الخطأ… وأعيدي المحاولة</span></div>`;
+},function(t){sceneFade(this,t);const e=this.el;K(q(e,'#hd'),t,fadeUp(.2));
+  qa(e,'.ms').forEach((c,i)=>K(c,t,[[.8+i*.9,{o:0,y:70}],[1.5+i*.9,{o:1,y:0},back]]));
+  qa(e,'.ar2').forEach((c,i)=>K(c,t,[[1.5+i*.9,{o:0,x:20}],[1.9+i*.9,{o:1,x:0}]]));
+  K(q(e,'#ft'),t,fadeUp(4.4));
+},[[.8,'pop'],[1.7,'pop'],[2.6,'pop'],[4.4,'swish']]);
+
+/* ---------- 7. STATIONS ---------- */
+function stationArt(s){
+  const sal=(o={})=>person({...SALMA,...o});
+  switch(s.n){
+  case 1: return `${backdrop({window:false})}
+    <g><rect x="740" y="210" width="380" height="530" fill="#0f5b53"/><rect x="770" y="240" width="320" height="500" fill="#1b8a7c"/><rect x="820" y="290" width="220" height="170" rx="10" fill="#bfe3ef" stroke="#0f5b53" stroke-width="8"/><circle cx="1060" cy="500" r="14" fill="#f4ab3c"/>
+     <rect x="790" y="140" width="280" height="60" rx="12" fill="#0a2530"/><text x="930" y="182" text-anchor="middle" font-family="Cairo" font-weight="900" font-size="34" fill="#fff">مختبر العلوم</text>
+     <g transform="translate(860,620)">${hazard(0,0,.45)}</g></g>
+    <g><rect x="430" y="300" width="260" height="14" rx="6" fill="#8aa7a1"/><path d="M480,314 v20 M640,314 v20" stroke="#8aa7a1" stroke-width="8"/>
+     <path d="M440,330 Q480,322 520,330 L540,560 L420,560 Z" fill="#fff" stroke="#cfd8dc" stroke-width="4"/>
+     <rect x="580" y="350" width="90" height="34" rx="16" fill="rgba(140,220,255,.6)" stroke="#2f6f96" stroke-width="5"/><path d="M580,367 h-14 M670,367 h14" stroke="#2f6f96" stroke-width="5"/>
+     <text x="560" y="610" text-anchor="middle" font-family="Cairo" font-size="26" font-weight="700" fill="#127369">معدات الوقاية</text></g>
+    <g transform="translate(1350,760)"><g id="salma" class="p">${sal({coat:false,open:true,armR:-40,hand:'<g id="cup"><rect x="112" y="-212" width="40" height="52" rx="6" fill="#e2584c"/><rect x="108" y="-218" width="48" height="10" rx="4" fill="#fff"/><path d="M120,-232 q6,-12 0,-24 M138,-232 q6,-12 0,-24" stroke="#bbb" stroke-width="4" fill="none"/></g>'})}</g></g>
+    <g transform="translate(1130,790)"><g id="spill" class="c" opacity="0"><ellipse cx="0" cy="0" rx="130" ry="26" fill="#c7553a" opacity=".75"/></g></g>`;
+  case 2: return `${backdrop({window:false})}
+    <g><rect x="840" y="150" width="240" height="100" rx="12" fill="#1aa260"/><text x="960" y="196" text-anchor="middle" font-family="Cairo" font-weight="900" font-size="34" fill="#fff">مخرج طوارئ</text><path d="M900,232 h120" stroke="#fff" stroke-width="6"/><path d="M1010,222 l14,10 l-14,10" fill="#fff"/></g>
+    <rect x="860" y="270" width="200" height="460" fill="#cfe3dd" stroke="#9fb6b1" stroke-width="6"/>
+    ${counter(120,560,620)}${counter(1300,560,520)}
+    ${flask(300,560,'#5fc3a8',.8)}${tube(420,560,'#f4ab3c')}${flask(1500,560,'#6aa6e8',.8)}
+    <g><rect x="1195" y="540" width="56" height="150" rx="22" fill="#d6312a"/><rect x="1205" y="520" width="36" height="26" fill="#333"/><path d="M1241,540 q40,10 30,60" stroke="#333" stroke-width="8" fill="none"/>
+      <rect x="1130" y="610" width="140" height="120" fill="#c89b62" stroke="#a87b44" stroke-width="5"/><rect x="1150" y="560" width="110" height="60" fill="#d8ac72" stroke="#a87b44" stroke-width="5"/></g>
+    <g transform="translate(960,742)"><g id="bag" class="c"><rect x="-70" y="-90" width="140" height="96" rx="20" fill="#7d5ba6"/><path d="M-36,-90 q36,-46 72,0" stroke="#5b3f80" stroke-width="10" fill="none"/><rect x="-40" y="-56" width="80" height="34" rx="8" fill="#9a7cc2"/></g></g>
+    <g transform="translate(1060,760)"><g id="salma" class="p" opacity="0">${sal()}</g></g>`;
+  case 3: return `${backdrop({})}
+    ${counter(200,560,1500)}${sink(480,560)}
+    <circle cx="1560" cy="420" r="0"/><rect x="1530" y="390" width="70" height="90" rx="10" fill="#fff" stroke="#9fb6b1" stroke-width="4"/><circle cx="1552" cy="425" r="6" fill="#555"/><circle cx="1578" cy="425" r="6" fill="#555"/>
+    <path id="cord" d="M1565,450 C1560,520 1400,540 1300,548 S960,560 790,552" stroke="#2a2f3a" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="900" stroke-dashoffset="0"/>
+    <g id="strip"><rect x="740" y="534" width="110" height="26" rx="8" fill="#f7f7f7" stroke="#2a2f3a" stroke-width="4"/><circle cx="770" cy="547" r="5" fill="#2a2f3a"/><circle cx="800" cy="547" r="5" fill="#2a2f3a"/></g>
+    <g id="drops">${[[960,552],[1000,548],[1050,553],[905,556],[1080,546]].map(([x,y],i)=>`<path d="M${x},${y-16} q10,14 0,18 q-10,-4 0,-18z" fill="#4fa9e8"/>`).join('')}<ellipse cx="1000" cy="556" rx="70" ry="6" fill="rgba(79,169,232,.45)"/></g>
+    <g><rect x="1220" y="440" width="170" height="114" rx="12" fill="#5e6e78"/><rect x="1240" y="460" width="130" height="18" rx="9" fill="#e2584c"/><circle cx="1360" cy="520" r="12" fill="#f4ab3c"/><path d="M1300,554 C1300,580 1180,560 850,552" stroke="#2a2f3a" stroke-width="7" fill="none"/></g>
+    <g transform="translate(1250,760)"><g id="salma" class="p" opacity="0">${sal({armR:-60})}</g></g>`;
+  case 4: return `${backdrop({window:false})}
+    ${counter(1050,560,800)}${sink(1550,560)}
+    <g id="bottle"><rect x="1370" y="420" width="64" height="140" rx="14" fill="#7cc0a8" opacity=".9"/><rect x="1386" y="396" width="32" height="30" fill="#2a2f3a"/><rect x="1380" y="470" width="44" height="40" rx="4" fill="#fff"/><g transform="translate(1402,490) scale(.13)">${hazard(0,0)}</g></g>
+    <g transform="translate(980,850)"><g id="puddle" class="c"><path d="M-170,0 q20,-40 110,-36 q60,-30 120,-6 q80,0 90,30 q-10,40 -120,34 q-80,20 -140,0 q-70,4 -60,-22z" fill="rgba(140,200,90,.75)" stroke="rgba(100,160,60,.8)" stroke-width="4"/></g></g>
+    <g transform="translate(600,800)"><g id="mate" class="p">${person({...MATE,armR:-70,hand:'<rect x="120" y="-200" width="54" height="40" rx="8" fill="#fff" stroke="#ccc" stroke-width="3"/>'})}</g></g>
+    <g transform="translate(860,820)"><g id="salma" class="p" opacity="0">${sal({armR:-70,hand:'<rect x="120" y="-200" width="54" height="40" rx="8" fill="#fff" stroke="#ccc" stroke-width="3"/>'})}</g></g>`;
+  case 5: return `${backdrop({})}
+    <g><rect x="380" y="560" width="1000" height="28" rx="6" fill="url(#counter${CUR_U})"/><rect x="420" y="588" width="30" height="152" fill="#56656e"/><rect x="1310" y="588" width="30" height="152" fill="#56656e"/>
+      ${tube(560,560,'#6aa6e8')}${tube(600,560,'#f4ab3c')}${flask(760,560,'#5fc3a8',.8)}<rect x="900" y="520" width="140" height="40" rx="6" fill="#9fb6b1"/>${[0,1,2,3].map(i=>`<circle cx="${920+i*33}" cy="530" r="10" fill="#fff" stroke="#7aa" stroke-width="3"/>`).join('')}</g>
+    <g><path d="M0,880 H1920 M0,1010 H1920" stroke="#f4ab3c" stroke-width="12" stroke-dasharray="40 30"/><text x="300" y="960" font-family="Cairo" font-weight="900" font-size="40" fill="rgba(255,255,255,.75)">ممر</text></g>
+    <g transform="translate(1040,560)"><g id="ftube" class="c" opacity="0">${tube(0,0,'#e2584c')}</g></g>
+    <g id="shards">${[[930,790,20],[985,812,-30],[1040,785,60],[1090,815,10],[1010,800,-70],[960,820,45],[1130,795,-15]].map(([x,y,r])=>`<path d="M${x},${y} l18,-10 l6,22 z" fill="rgba(220,245,255,.9)" stroke="#6aa" stroke-width="3" transform="rotate(${r} ${x} ${y})"/>`).join('')}</g>
+    <g transform="translate(1480,800)"><g id="mate" class="p">${person({...MATE,armL:30,armR:-20})}</g></g>
+    <g transform="translate(1180,780)"><g id="salma" class="p" opacity="0">${sal()}</g></g>`;
+  }
+}
+function stationTimes(s){
+  const L=s.lens?2.4:0; const R=7.8+L, D=R+4.8;
+  if(s.wrong){const W=D+2.9, D2=W+5.2, P=D2+3.9;return {L,R,D,W,D2,P,dur:P+4.2}}
+  return {L,R,D,D2:D,P:D+3.9,dur:D+3.9+4.2};
+}
+ST.forEach((s,si)=>{
+  const T=stationTimes(s);
+  const cues=[[0.1,'whoosh'],[.5,'boom'],[3.4,'swish']];
+  s.clues.forEach((c,i)=>cues.push([4.2+i*1.25,'pop']));
+  if(s.lens)cues.push([7.9,'zoom']);
+  cues.push([T.R,'rewind'],[T.R+1.0,'tick'],[T.R+3.3,'pause'],[T.D,'swish']);
+  if(s.wrong){cues.push([T.D+2.3,'click'],[T.D+2.45,'wrong'],[T.W+1.0,'splash'],[T.W+4.4,'click'],[T.D2+2.3,'click'])}
+  else cues.push([T.D+2.3,'click']);
+  cues.push([T.D2+2.45,'success'],[T.P,'page'],[T.P+.6,'type'],[T.P+3.1,'swish'],[T.P+3.5,'chime']);
+  addScene(T.dur,el=>{
+    const optL=[1270,700,130];
+    el.innerHTML=`
+    <div class="abs" id="art" style="inset:0"><svg width="1920" height="1080" viewBox="0 0 1920 1080">${stationArt(s)}</svg></div>
+    <div class="vhs" id="vhs"><div class="vhsband" id="band"></div><div class="vhstag" id="vtag"></div><div class="tc" id="tc"></div></div>
+    <div class="caption" id="cap" style="z-index:16"><div class="captxt">${s.rew}</div></div>
+    ${s.clues.map((c,i)=>`<div class="pin" style="left:${c[1]}px;top:${c[2]}px;z-index:12"><div class="ring cr"></div></div>
+       <div class="pin" style="left:${c[1]}px;top:${c[2]+(c[3]!=null?c[3]:(c[2]>700?-115:115))}px;z-index:13"><div class="chip cc"><span style="color:var(--amber);font-weight:900">${ar(i+1)}</span>&nbsp; ${c[0]}</div></div>`).join('')}
+    <div class="pin" id="mag" style="left:0;top:0;z-index:14"><div style="margin:70px 0 0 70px">${MAG}</div></div>
+    ${s.lens?`<div class="pin" style="left:1000px;top:520px;z-index:17"><div id="zoom" style="width:600px;height:600px;border-radius:50%;background:#fff;border:16px solid var(--amber);box-shadow:0 0 0 12px rgba(0,0,0,.25),0 30px 80px rgba(0,0,0,.5);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ink);text-align:center">
+        <svg width="220" height="220" viewBox="-80 -80 160 160">${hazard(0,0,1.05)}</svg>
+        <div style="font-size:44px;font-weight:900;margin-top:10px">مادة أكّالة</div><div style="font-size:30px;font-weight:700;color:#c0392b">تحذير: تجنّبي اللمس المباشر</div><div style="font-size:24px;color:#567">(ملصق افتراضي)</div></div></div>`:''}
+    <div class="topbar" id="bar"><div class="ttl">المحطة ${s.ord}: <span class="amber">${s.name}</span></div>
+      <div class="steps"><div class="step" data-k="0">العدسة</div><div class="step" data-k="1">إعادة الشريط</div><div class="step" data-k="2">القرار</div></div>
+      <div class="counter">الصفحات <span id="cn">${ar(si)}</span> / ٥</div></div>
+    <div class="dim" id="dim"></div>
+    <div class="abs center h2" id="qq" style="top:220px;z-index:26;font-size:64px">ماذا تفعلين؟</div>
+    ${s.opts.map((o,i)=>`<div class="opt" style="left:${optL[i]}px"><div class="let">${['أ','ب','ج'][i]}</div>${o}<div class="mark"></div></div>`).join('')}
+    <div class="fb" id="fbOk"><div class="fbin">قرار موفّق!</div><div class="fbsub">${s.why}</div></div>
+    ${s.wrong?`<div class="abs center" id="wsay" style="top:150px;z-index:22"><div style="display:inline-block;background:rgba(10,37,48,.9);padding:22px 50px;border-radius:24px;border:3px solid var(--amber)"><div style="font-size:54px;font-weight:900" class="amber">لنرَ ما سيحدث…</div><div style="font-size:34px;font-weight:700;margin-top:6px">${s.wrong.say}</div></div></div>
+      <div class="abs center" id="whint" style="top:850px;z-index:22"><div style="display:inline-block;background:#fff;color:var(--ink);padding:18px 44px;border-radius:20px;font-size:36px;font-weight:700;border-inline-start:12px solid var(--amber)">${s.wrong.hint}</div></div>
+      <div class="abs center" id="wbtn" style="top:960px;z-index:22"><span class="btn" style="font-size:34px;padding:12px 46px">أعيدي المحاولة</span></div>`:''}
+    <div class="abs" id="pgDim" style="inset:0;background:rgba(6,23,30,.88);z-index:28"></div>
+    <div class="page" id="pg"><div class="num">الصفحة ${ar(s.n)} — مستعادة ✓</div><div class="lt">${s.law}</div><div class="law" id="lawT">${s.page}</div></div>
+    ${slotsHTML(si)}
+    ${CURSOR}`;
+    const cur=q(el,'.cursor');cur.style.zIndex=40;cur._clicks=[T.D+2.3];if(s.wrong)cur._clicks.push(T.W+4.4,T.D2+2.3);
+  },function(t){
+    const e=this.el;sceneFade(this,t);
+    // --- title card
+    let tc=e._tc; if(!tc){tc=html(`<div class="abs" style="inset:0;z-index:60;background:radial-gradient(ellipse at 50% 45%,#134854,#0a2530 60%,#06171e)">
+        <div class="center" style="top:120px;font-size:420px;font-weight:900;line-height:1;color:rgba(31,165,149,.28)">${ar(s.n)}</div>
+        <div class="center h3 mint" style="top:560px" data-a>المحطة ${s.ord}</div>
+        <div class="center h1" style="top:620px;font-size:120px" data-b>${s.name}</div>
+        <div class="center h3 amber" style="top:800px" data-c>اكتشاف ${s.law}</div></div>`);e.appendChild(tc);e._tc=tc}
+    K(tc,t,[[2.6,{o:1}],[3.2,{o:0}]]);
+    K(tc.children[0],t,[[0,{s:.7,o:0}],[1,{s:1,o:1},easeOut],[3.2,{s:1.08}]]);
+    K(q(tc,'[data-a]'),t,fadeUp(.4));K(q(tc,'[data-b]'),t,[[.6,{o:0,s:1.2,b:10}],[1.2,{o:1,s:1,b:0},easeOut]]);K(q(tc,'[data-c]'),t,[[1.2,{cl:0}],[2.1,{cl:100},lin]]);
+    // --- phase & steps
+    const ph=t<T.R?0:t<T.D?1:2;qa(e,'.step').forEach(x=>x.classList.toggle('on',+x.dataset.k===ph));
+    K(q(e,'#bar'),t,[[3.0,{o:0,y:-60}],[3.6,{o:1,y:0}]]);
+    // --- clues
+    const cr=qa(e,'.cr'),cc=qa(e,'.cc');
+    s.clues.forEach((c,i)=>{const t0=4.2+i*1.25;
+      K(cr[i],t,[[t0,{o:0,s:.3}],[t0+.4,{o:1,s:1+.06*Math.sin(t*6)},back],[T.R-.2,{o:1}],[T.R+.2,{o:0}]]);
+      K(cc[i],t,[[t0+.1,{o:0,s:.6}],[t0+.5,{o:1,s:1},back],[T.R-.2,{o:1}],[T.R+.2,{o:0}]])});
+    const mp=[[3.4,1920,1080]];s.clues.forEach((c,i)=>{mp.push([3.85+i*1.25,c[1],c[2]]);mp.push([4.25+i*1.25,c[1],c[2]])});
+    if(s.lens){mp.push([7.7,1400,470]);mp.push([7.9+L0(),1400,470])}
+    mp.push([T.R-.4,1700,1150]);
+    const mg=q(e,'#mag');S(mg,{x:V(t,mp.map(p=>[p[0],p[1]])),y:V(t,mp.map(p=>[p[0],p[2]])),o:V(t,[[3.3,0],[3.5,1],[T.R-.5,1],[T.R-.3,0]])});
+    function L0(){return T.L-.4}
+    if(s.lens)K(q(e,'#zoom'),t,[[7.9,{o:0,s:.2}],[8.4,{o:1,s:1},back],[7.9+T.L-.3,{o:1,s:1}],[7.9+T.L,{o:0,s:.6}]]);
+    // --- rewind
+    const R=T.R, inR=t>=R&&t<T.D;
+    const art=q(e,'#art');
+    art.style.filter=inR?`sepia(.55) saturate(.85) contrast(1.08) brightness(${t<R+1?0.92+Math.random()*0:1})`:'none';
+    K(q(e,'#vhs'),t,[[R-.05,{o:0}],[R,{o:1}],[T.D-.1,{o:1}],[T.D+.1,{o:0}]]);
+    const band=q(e,'#band');band.style.top=((t*700)%1200-100)+'px';
+    const vt=q(e,'#vtag');vt.innerHTML=t<R+1?'◀◀ <span class="ar">إعادة الشريط</span>':t<R+3.3?'▶ <span class="ar">تشغيل</span>':'❚❚ <span class="ar">لحظة حرجة</span>';
+    vt.style.color=t>=R+3.3?'#f4ab3c':'#fff';
+    const sec=t<R+1?Math.max(0,12-(t-R)*12):Math.min(9,(t-R-1)*2.6+3.5);
+    q(e,'#tc').textContent=`00:00:${String(Math.floor(sec)).padStart(2,'0')}:${String(Math.floor((sec%1)*30)).padStart(2,'0')}`;
+    K(q(e,'#cap'),t,[[R+3.3,{o:0,y:30}],[R+3.7,{o:1,y:0}],[T.D-.1,{o:1}],[T.D+.1,{o:0}]]);
+    art.style.transform=inR&&t<R+1?`translateX(${Math.sin(t*90)*6}px)`:'none';
+    animateActors(s,e,t,T);
+    // --- decision
+    const W=T.W;
+    const dimKf=[[T.D,{o:0}],[T.D+.4,{o:1}]];if(s.wrong){dimKf.push([W-.1,{o:1}],[W+.3,{o:0}],[T.D2-.4,{o:0}],[T.D2,{o:1}])}
+    K(q(e,'#dim'),t,dimKf);
+    const qk=[[T.D+.2,{o:0,y:-30}],[T.D+.6,{o:1,y:0}]];if(s.wrong)qk.push([W-.1,{o:1,y:0}],[W+.2,{o:0,y:-30}],[T.D2-.3,{o:0,y:-30}],[T.D2,{o:1,y:0}]);
+    K(q(e,'#qq'),t,qk);
+    const opts=qa(e,'.opt');
+    opts.forEach((o,i)=>{const k=[[T.D+.4+i*.2,{o:0,y:80}],[T.D+.9+i*.2,{o:1,y:0},back]];
+      if(s.wrong)k.push([W-.1,{o:1,y:0}],[W+.25,{o:0,y:80}],[T.D2-.3+i*.12,{o:0,y:80}],[T.D2+.2+i*.12,{o:1,y:0},back]);
+      k.push([T.P-.3,{o:1,y:0}],[T.P,{o:0,y:0}]);
+      K(o,t,k);
+      const mk=q(o,'.mark');let st='';
+      if(s.wrong&&i===0&&t>T.D+2.4&&t<W+.3)st='bad';
+      if(i===1&&t>T.D2+2.4)st='good';
+      o.style.borderColor=st==='good'?'var(--green)':st==='bad'?'var(--red)':'transparent';
+      o.style.boxShadow=st==='good'?'0 0 0 10px rgba(53,179,122,.35)':st==='bad'?'0 0 0 10px rgba(226,88,76,.3)':'none';
+      mk.style.background=st==='good'?'var(--green)':st==='bad'?'var(--red)':'transparent';mk.textContent=st==='good'?'✓':st==='bad'?'✗':'';
+      if(st==='bad'&&t<T.D+2.9)o.style.transform=`translateX(${Math.sin((t-T.D-2.4)*60)*10*(1-(t-T.D-2.4)/.5)}px)`;
+      if(st==='good'){const p=clamp((t-T.D2-2.4)/.4,0,1);o.style.transform=`scale(${1+.06*Math.sin(p*Math.PI)})`}
+    });
+    const cpath=[[T.D+1.2,960,1100],[T.D+2.1,1530,560]];
+    if(s.wrong)cpath.push([W,1530,560],[W+3.6,1300,1100],[W+4.3,960,990],[T.D2+1.2,960,990],[T.D2+2.1,960,560]);
+    else cpath[1]=[T.D+2.1,960,560];
+    const cur=q(e,'.cursor');cursorTo(cur,t,cpath);
+    if(t<T.D+1.0||t>T.P-.2)cur.style.opacity=0;
+    if(s.wrong&&t>W+.2&&t<W+3.3)cur.style.opacity=0;
+    K(q(e,'#fbOk'),t,[[T.D2+2.5,{o:0,s:.7}],[T.D2+2.9,{o:1,s:1},back],[T.P-.3,{o:1}],[T.P,{o:0}]]);
+    if(s.wrong){K(q(e,'#wsay'),t,[[W+.3,{o:0,y:-30}],[W+.7,{o:1,y:0}],[T.D2-.5,{o:1}],[T.D2-.2,{o:0}]]);
+      K(q(e,'#whint'),t,[[W+2.4,{o:0,y:30}],[W+2.8,{o:1,y:0}],[T.D2-.5,{o:1}],[T.D2-.2,{o:0}]]);
+      K(q(e,'#wbtn'),t,[[W+3.2,{o:0,s:.6}],[W+3.6,{o:1,s:1},back],[W+4.4,{s:.92}],[W+4.6,{s:1}],[T.D2-.5,{o:1}],[T.D2-.2,{o:0}]]);}
+    // --- page restore
+    const P=T.P;
+    K(q(e,'#pgDim'),t,[[P-.2,{o:0}],[P+.3,{o:1}]]);
+    const sl=qa(e,'.slot'),scx=350+(4-si)*250+110;
+    K(q(e,'.slots'),t,[[P+.2,{o:0,y:40}],[P+.7,{o:1,y:0}]]);
+    K(q(e,'#pg'),t,[[P,{o:0,s:.4,r:-12,x:0,y:-200}],[P+.6,{o:1,s:1,r:0,x:0,y:0},back],[P+2.9,{s:1,x:0,y:0,r:0}],[P+3.5,{s:.275,x:scx-960,y:930-450,r:0},ease],[P+3.55,{o:1}],[P+3.65,{o:0}]]);
+    revealWords(q(e,'#lawT'),t,P+.6,P+2.4);
+    const sn=sl[si],done=t>P+3.5;sn.classList.toggle('full',done);q(sn,'.ic').textContent=done?'✓':ar(s.n);
+    K(sn,t,[[P+3.5,{s:1}],[P+3.75,{s:1.15},easeOut],[P+4.0,{s:1}]]);
+    q(e,'#cn').textContent=ar(si+(done?1:0));
+  },cues);
+});
+function animateActors(s,e,t,T){
+  const R=T.R, sal=q(e,'#salma');
+  const walkBob=(t0,t1)=>t>t0&&t<t1?-Math.abs(Math.sin((t-t0)*9))*10:0;
+  switch(s.n){
+  case 1:{ // Salma at door with cup. rewind: walks backwards out to right, then walks in
+    let x=V(t,[[R,0],[R+1,520,lin],[R+1.2,520],[R+3.2,0,easeOut]]);
+    let y=walkBob(R,R+1)+walkBob(R+1.2,R+3.2);
+    if(s.wrong&&t>T.W){x=V(t,[[T.W,0],[T.W+1.6,-330,easeOut]]);y=walkBob(T.W,T.W+1.6);if(t>T.D2-.4)x=V(t,[[T.D2-.4,-330],[T.D2,0]])}
+    S(sal,{x,y});
+    const cup=q(e,'#cup');
+    if(s.wrong&&t>T.W+.9&&t<T.D2-.4){const p=clamp((t-T.W-.9)/.5,0,1);cup.style.transform=`rotate(${-80*easeOut(p)}deg)`;cup.style.transformBox='fill-box';cup.style.transformOrigin='0% 100%'}else cup.style.transform='none';
+    const sp=q(e,'#spill');if(s.wrong&&t>T.W+1.1&&t<T.D2-.4){const p=clamp((t-T.W-1.1)/.9,0,1);sp.setAttribute('opacity',.9);sp.style.transform=`scale(${easeOut(p)})`}else sp.setAttribute('opacity',0);
+    break;}
+  case 2:{
+    const inR=t>=R&&t<T.D+.4;
+    q(e,'#salma').setAttribute('opacity',inR&&t>R+1?1:0);
+    S(sal,{x:V(t,[[R+1,-1300],[R+2.3,0,easeOut]]),y:walkBob(R+1,R+2.3)});
+    const bag=q(e,'#bag');
+    if(t<R)S(bag,{o:1,x:0,y:0});else if(t<R+1)S(bag,{o:1-(t-R),x:0,y:0});
+    else S(bag,{o:V(t,[[R+2.3,0],[R+2.35,1]]),x:V(t,[[R+2.3,140],[R+3,0]]),y:V(t,[[R+2.3,-160],[R+2.9,0,easeOut]]),r:V(t,[[R+2.3,-20],[R+2.9,0]])});
+    break;}
+  case 3:{
+    q(e,'#salma').setAttribute('opacity',t>R+1&&t<T.D+.4?1:0);
+    S(sal,{x:V(t,[[R+1,500],[R+2.2,0,easeOut],[R+3,0],[R+3.3,60]]),y:walkBob(R+1,R+2.2)});
+    const cord=q(e,'#cord');
+    const d=t<R?0:t<R+1?(t-R)*900:V(t,[[R+1,900],[R+2.2,900],[R+3.2,0]]);S(cord,{dash:d});
+    const st=q(e,'#strip');st.style.opacity=t<R?1:t<R+1?1-(t-R):V(t,[[R+3,0],[R+3.2,1]]);
+    q(e,'#drops').style.opacity=t<R?1:t<R+1?1-(t-R):V(t,[[R+2.4,0],[R+3.2,1]]);
+    break;}
+  case 4:{
+    const inR=t>=R&&t<T.D+.4;
+    q(e,'#mate').style.opacity=inR?0:1;
+    if(!inR)S(q(e,'#mate'),{r:-12+Math.sin(t*2)*2});
+    q(e,'#salma').setAttribute('opacity',inR&&t>R+1?1:0);
+    S(sal,{x:V(t,[[R+1,800],[R+2.3,0,easeOut]]),y:walkBob(R+1,R+2.3),r:V(t,[[R+2.4,0],[R+3.1,-14]])});
+    break;}
+  case 5:{
+    const inR=t>=R&&t<T.D+.4;
+    q(e,'#mate').style.opacity=inR?0:1;if(!inR)S(q(e,'#mate'),{r:-14+Math.sin(t*2)*2});
+    q(e,'#salma').setAttribute('opacity',inR&&t>R+1?1:0);
+    S(sal,{x:V(t,[[R+1,-900],[R+2.0,0,easeOut]]),y:walkBob(R+1,R+2.0),r:V(t,[[R+2.7,0],[R+3.2,-16]])});
+    const ft=q(e,'#ftube');
+    if(inR&&t>R+1.6&&t<R+2.4){ft.setAttribute('opacity',1);const p=(t-R-1.6)/.8;S(ft,{y:240*p*p,r:200*p})}else ft.setAttribute('opacity',0);
+    q(e,'#shards').style.opacity=t<R?1:t<R+1?1-(t-R):(t>R+2.4?1:0);
+    break;}
+  }
+}
+
+/* ---------- 8. MY NOTEBOOK ---------- */
+const FILL=[['أرتدي معدات','الوقاية','قبل دخول المختبر.'],['أُبقي الممرات','خالية','دائمًا.'],['أُبعد الوصلات الكهربائية عن','الماء','.'],['لا تُنظَّف مادة مجهولة قبل','معرفة نوعها','.'],['لا ألمس الزجاج المكسور','بيدي','.']];
+addScene(13,el=>{
+  el.innerHTML=`<div class="center h2" style="top:50px;font-size:62px" id="hd">دفتري</div>
+  <div class="center h3 mint" style="top:140px;font-size:34px" id="sb">أكملي القوانين الخمسة بكلماتكِ</div>
+  <div class="abs page" id="nb" style="left:260px;top:220px;width:1400px;height:790px;padding:60px 110px">
+   ${FILL.map((f,i)=>`<div class="fl" style="display:flex;align-items:center;gap:18px;height:130px;font-size:46px;font-weight:700">
+      <span style="width:56px;height:56px;border-radius:50%;background:var(--teal);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;flex:none">${ar(i+1)}</span>
+      <span>${f[0]}</span><span class="blank" style="position:relative;display:inline-block;min-width:${f[1].length*28+60}px;border-bottom:5px dashed #9fb6b1;text-align:center;height:72px">
+        <span class="wd" style="display:inline-block;color:var(--teal);font-weight:900">${f[1]}</span></span><span>${f[2]}</span>
+      <span class="ok" style="margin-inline-start:auto;width:60px;height:60px;border-radius:50%;background:var(--green);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:36px">✓</span></div>`).join('')}
+  </div>`;
+},function(t){sceneFade(this,t);const e=this.el;K(q(e,'#hd'),t,fadeUp(.2));K(q(e,'#sb'),t,fadeUp(.5));K(q(e,'#nb'),t,[[.4,{o:0,y:60}],[1.1,{o:1,y:0},easeOut]]);
+  qa(e,'.fl').forEach((f,i)=>{const t0=1.4+i*1.9;K(f,t,fadeUp(t0,.5,20));
+    K(q(f,'.wd'),t,[[t0+.8,{o:0,y:-90,s:1.3}],[t0+1.2,{o:1,y:0,s:1},back]]);
+    q(f,'.blank').style.borderBottomColor=t>t0+1.2?'#1fa595':'#9fb6b1';q(f,'.blank').style.borderBottomStyle=t>t0+1.2?'solid':'dashed';
+    K(q(f,'.ok'),t,pop(t0+1.3,.35))});
+},[[1.4,'swish'],...[0,1,2,3,4].flatMap(i=>[[2.2+i*1.9,'pop'],[2.7+i*1.9,'ding']])]);
+
+/* ---------- 9. FINAL REVEAL ---------- */
+const WHAT=['دخلت بكوب','تركت حقيبتها','مدّت الوصلة','مسحت دون أن تقرأ','جمعت الزجاج بيدها'];
+addScene(16,el=>{
+  el.innerHTML=`
+  <div id="p1" class="abs" style="inset:0">
+   <div class="center h2" style="top:70px;font-size:64px" id="hd">الكشف الختامي</div>
+   <div class="center h3 mint" style="top:170px" id="qh">من وراء المخالفات الخمس؟</div>
+   ${WHAT.map((w,i)=>`<div class="abs wc" style="left:${1530-i*340}px;top:300px;width:300px"><div class="card" style="padding:16px;text-align:center;overflow:hidden">
+     <svg width="268" height="200" viewBox="0 0 268 200" style="background:#e3efeb;border-radius:16px;filter:sepia(.5)"><g transform="translate(134,200) scale(.4)">${person({...SALMA,coat:i!==0,open:i===0})}</g><text x="16" y="34" font-family="DejaVu Sans Mono" font-size="22" fill="#0a2530">◀◀</text></svg>
+     <div style="font-size:28px;font-weight:900;margin-top:10px">${w}</div>
+     <div class="hurry" style="margin-top:8px;display:inline-block;padding:4px 18px;border-radius:999px;background:var(--red);color:#fff;font-weight:900;font-size:24px">مستعجلة</div></div></div>`).join('')}
+   <div class="center" style="top:665px" id="ans"><div style="display:inline-block;padding:20px 70px;border:8px solid var(--amber);border-radius:30px;transform:rotate(-3deg)"><span style="font-size:100px;font-weight:900" class="amber">الاستعجال</span></div></div>
+   <div class="center h3" style="top:925px" id="ans2">السبب هو الاستعجال… لا الأشخاص</div>
+  </div>
+  <div id="p2" class="abs" style="inset:0">
+   <svg class="abs" width="1920" height="1080" viewBox="0 0 1920 1080">${backdrop({})}${counter(80,560,900)}${flask(300,560,'#5fc3a8',.8)}${tube(420,560,'#f4ab3c')}${tube(460,560,'#6aa6e8')}
+    <g transform="translate(1330,780)"><g class="p">${person({...SUP})}</g></g>
+    <g transform="translate(1620,790)"><g class="p" id="sal2">${person({...SALMA,goggles:true})}</g></g></svg>
+   <div class="abs" style="inset:0;background:linear-gradient(270deg,rgba(6,23,30,.0) 30%,rgba(6,23,30,.9) 52%)"></div>
+   <div class="abs" style="left:110px;width:900px;top:200px;text-align:center" id="refl">
+     <div class="h3 mint" style="font-size:36px">سؤال للتأمل</div>
+     <div class="h2" style="font-size:76px;margin-top:10px">ماذا كنتِ ستفعلين<br>في مكان سلمى؟</div></div>
+   <div class="abs" style="left:110px;width:900px;top:600px;text-align:center" id="ready">
+     <div style="display:inline-block;padding:18px 40px;border-radius:24px;background:var(--green);font-weight:900;font-size:38px;white-space:nowrap">✓ المختبر جاهز لاستقبال الدفعة الجديدة</div>
+     <div class="mint" style="font-size:36px;font-weight:700;margin-top:18px">الصفحات المستعادة ٥ / ٥</div></div>
+   <div class="abs" style="left:110px;width:900px;top:860px;text-align:center" id="fin"><span class="btn">إنهاء</span></div>
+  </div>`;
+},function(t){sceneFade(this,t);const e=this.el;
+  K(q(e,'#p1'),t,[[7.6,{o:1}],[8.2,{o:0}]]);K(q(e,'#p2'),t,[[7.8,{o:0,s:1.06}],[8.6,{o:1,s:1},easeOut]]);
+  K(q(e,'#hd'),t,fadeUp(.2));K(q(e,'#qh'),t,fadeUp(.7));
+  qa(e,'.wc').forEach((c,i)=>{K(c,t,[[1.2+i*.3,{o:0,y:60}],[1.7+i*.3,{o:1,y:0},back]]);K(q(c,'.hurry'),t,pop(3.4+i*.15,.35))});
+  K(q(e,'#ans'),t,[[4.8,{o:0,s:2.4}],[5.2,{o:1,s:1},easeOut]]);K(q(e,'#ans2'),t,fadeUp(5.8));
+  K(q(e,'#sal2'),t,[[8.6,{x:500}],[10,{x:0},easeOut]]);
+  K(q(e,'#refl'),t,fadeUp(9.0,.8));K(q(e,'#ready'),t,pop(12.2,.6));K(q(e,'#fin'),t,pop(13.6,.5));
+},[[.2,'whoosh'],[1.2,'pop'],[1.5,'pop'],[1.8,'pop'],[2.1,'pop'],[2.4,'pop'],[3.4,'tick'],[4.8,'boom'],[7.8,'whoosh'],[9.0,'shimmer'],[12.2,'success'],[13.6,'pop']]);
+
+/* ---------- 10. OUTRO ---------- */
+addScene(8,el=>{
+  el.innerHTML=`<svg class="abs" width="1920" height="1080"><g transform="translate(960,250)"><g class="c" id="nb">${notebookIcon(0,0,.85)}</g></g></svg>
+  <div class="center h1" style="top:420px;font-size:120px" id="t1">لغز المختبر</div>
+  <div class="center h2 amber" style="top:575px;font-size:64px" id="t2">الصفحات المفقودة</div>
+  <div class="center h3" style="top:720px;font-size:36px;color:#d7ebe6" id="t3">${TEAM.join(' · ')}</div>
+  <div class="center h3 mint" style="top:790px;font-size:32px" id="t4">بإشراف الدكتورة خولة الدويش</div>
+  <div class="center" style="top:900px" id="t5"><span class="pill">سلامتكِ تبدأ بقرار</span></div>`;
+},function(t){sceneFade(this,t);const e=this.el;
+  K(q(e,'#nb'),t,[[0,{o:0,s:.6}],[.8,{o:1,s:1},back],[8,{s:1.05}]]);
+  K(q(e,'#t1'),t,fadeUp(.5));K(q(e,'#t2'),t,fadeUp(.9));K(q(e,'#t3'),t,fadeUp(1.6));K(q(e,'#t4'),t,fadeUp(2.0));K(q(e,'#t5'),t,pop(2.8));
+},[[0,'shimmer'],[2.8,'chime']]);
+
+/* =====================  engine  ===================== */
+const TOTAL=clock;
+window.TOTAL=TOTAL;window.CUES=CUES;window.FPS=30;
+function renderAt(T){for(const sc of SCENES){const lt=T-sc.start;if(lt>=0&&lt<sc.dur){sc.el.style.display='block';sc.update.call(sc,lt)}else sc.el.style.display='none'}}
+window.renderAt=renderAt;window.STARTS=SCENES.map(s=>[+s.start.toFixed(2),+s.dur.toFixed(2)]);
+function fit(){const s=Math.min(innerWidth/W,innerHeight/H);const st=document.getElementById('stage');st.style.transform=`scale(${s})`;st.style.left=(innerWidth-W*s)/2+'px';st.style.top=(innerHeight-H*s)/2+'px'}
+addEventListener('resize',fit);fit();
+const params=new URLSearchParams(location.search);
+if(params.has('render')){renderAt(0)}
+else{
+  // preview player
+  const au=new Audio('out/soundtrack.m4a');let playing=false,t0=0,base=0;
+  const ui=html(`<div style="position:fixed;left:0;right:0;bottom:0;padding:10px 16px;background:rgba(0,0,0,.6);display:flex;gap:12px;align-items:center;font:600 15px Cairo;z-index:99" dir="ltr">
+    <button id="pp" style="font:700 15px Cairo;padding:4px 14px">▶</button><input id="sk" type="range" min="0" max="${TOTAL}" step="0.01" value="0" style="flex:1"><span id="tm"></span></div>`);
+  document.body.appendChild(ui);
+  const pp=ui.querySelector('#pp'),sk=ui.querySelector('#sk'),tm=ui.querySelector('#tm');
+  const now=()=>playing?base+(performance.now()-t0)/1000:base;
+  const play=()=>{playing=true;t0=performance.now();au.currentTime=base;au.play().catch(()=>{});pp.textContent='❚❚'};
+  const pause=()=>{base=now();playing=false;au.pause();pp.textContent='▶'};
+  pp.onclick=()=>playing?pause():play();
+  sk.oninput=()=>{base=+sk.value;if(playing){t0=performance.now();au.currentTime=base}};
+  document.getElementById('stage').onclick=()=>playing?pause():play();
+  (function loop(){let T=now();if(T>=TOTAL){T=TOTAL-.01;if(playing)pause()}renderAt(T);sk.value=T;tm.textContent=T.toFixed(1)+' / '+TOTAL.toFixed(1)+'s';requestAnimationFrame(loop)})();
+}
+</script>
+</body>
+</html>
