@@ -24,7 +24,7 @@ export const TOTAL_FRAMES = TIMELINE.reduce((a, x) => a + frames(x.dur), 0);
 export const LabMystery: React.FC = () => {
   const {durationInFrames} = useVideoConfig();
   return (
-    <AbsoluteFill style={BG}>
+    <AbsoluteFill style={BG} dir="rtl" lang="ar">
       <style>{CSS}</style>
       <Audio src={staticFile('audio/music.m4a')} volume={(f) => interpolate(f, [0, 60, durationInFrames - 120, durationInFrames], [0, 0.55, 0.55, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})} />
       <Series>

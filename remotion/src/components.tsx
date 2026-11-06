@@ -1,19 +1,16 @@
 import React, {CSSProperties} from 'react';
-import {AbsoluteFill, Audio, OffthreadVideo, Sequence, continueRender, delayRender, staticFile, useVideoConfig} from 'remotion';
+import {AbsoluteFill, Audio, OffthreadVideo, Sequence, staticFile, useVideoConfig} from 'remotion';
+import {loadFont} from '@remotion/fonts';
 import {FOOTAGE} from './footage';
 import {CURSOR, MAG} from './art';
 import {V, clamp} from './lib';
 
-// ---------- fonts (block rendering until loaded) ----------
+// ---------- fonts (official @remotion/fonts loader; Remotion waits for them before rendering) ----------
 const FONTS: Array<[string, string, string]> = [
   ['Cairo', '400', 'Cairo-400.ttf'], ['Cairo', '700', 'Cairo-700.ttf'], ['Cairo', '900', 'Cairo-900.ttf'],
   ['Tajawal', '500', 'Tajawal-500.ttf'], ['Tajawal', '800', 'Tajawal-800.ttf'],
 ];
-if (typeof window !== 'undefined' && typeof FontFace !== 'undefined') {
-  const h = delayRender('Loading fonts');
-  Promise.all(FONTS.map(([fam, w, file]) => new FontFace(fam, `url(${staticFile('fonts/' + file)})`, {weight: w}).load().then((f) => document.fonts.add(f))))
-    .then(() => continueRender(h)).catch((e) => {console.error(e); continueRender(h);});
-}
+FONTS.forEach(([family, weight, file]) => loadFont({family, weight, url: staticFile('fonts/' + file)}));
 
 export const CSS = `
 :root{--ink:#0a2530;--ink2:#113845;--teal:#127369;--teal2:#1fa595;--mint:#bfe9df;--paper:#fbf6ea;--amber:#f4ab3c;--red:#e2584c;--green:#35b37a}
