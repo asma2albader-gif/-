@@ -1,48 +1,42 @@
-// Interactive version of «لغز المختبر»: Remotion <Player> plays short video segments,
-// and the app stops at every decision so the student chooses for herself.
+// Interactive «لغز المختبر»: one real scene shows all five violations.
+// The student spots a violation and taps it → the camera zooms in → its question → she answers
+// → its page returns to the safety booklet → back to the same scene until all five are found
+// → «دفتري» → the final reveal and reflection. Video segments play in Remotion's <Player>.
 import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Player, PlayerRef} from '@remotion/player';
 import {CSS, asset} from '../src/components';
-import {CONSEQUENCES, FILL, FILL_OPTIONS, ST, SUPERVISOR, TEAM} from '../src/data';
+import {FILL, FILL_OPTIONS, SUPERVISOR, TEAM} from '../src/data';
 import {ar} from '../src/lib';
-import {FPS, OPENING_DUR, OpeningSeg, OutroSeg, REVEAL_A, REVEAL_B, RevealASeg, RevealBSeg, StationSeg, stationSegDur} from '../src/Segments';
+import {FPS, OPENING_DUR, OpeningSeg, OutroSeg, REVEAL_A, REVEAL_B, RevealASeg, RevealBSeg} from '../src/Segments';
 import {DUR} from '../src/Scenes';
+import {FoundMark, HuntBar, OPT_LEFT, VIOL, tabCenter, zoomTransform} from '../src/Hunt';
 
-/* ---------------- sounds for clicks (the segments carry their own) ---------------- */
 const sfx = (name: string, vol = 0.7) => {try {const a = new Audio(asset(`audio/sfx/${name}.wav`)); a.volume = vol; a.play().catch(() => {});} catch {}};
 
-/* ---------------- state machine ---------------- */
+type Step = 'zoom' | 'question' | 'wrong' | 'right' | 'page' | 'fly';
 type Screen =
-  | {k: 'start'} | {k: 'opening'} | {k: 'begin'} | {k: 'hub'}
-  | {k: 'st'; si: number; step: 'intro' | 'clues' | 'rewind' | 'choice' | 'wrong' | 'wrongDone' | 'right'; choice?: number}
+  | {k: 'start'} | {k: 'opening'} | {k: 'begin'}
+  | {k: 'hunt'; v: number | null; step?: Step; choice?: number}
   | {k: 'notebook'} | {k: 'revealA'} | {k: 'reflect'} | {k: 'revealB'} | {k: 'finish'} | {k: 'outro'} | {k: 'end'};
 
-/** Which video segment is on screen, and whether it plays or sits paused on its last frame. */
-function segmentFor(sc: Screen, done: number[], found: number[], zoom: boolean) {
-  const frames = (s: number) => Math.round(s * FPS);
+/** Video segment on screen (played, or held on its last frame). The hunt itself is plain HTML over a real frame. */
+function segmentFor(sc: Screen) {
+  const f = (s: number) => Math.round(s * FPS);
   const still = (x: any) => ({...x, autoPlay: false});
   switch (sc.k) {
-    case 'start': return null;
-    case 'opening': return {id: 'opening', component: OpeningSeg, dur: frames(OPENING_DUR), props: {}, autoPlay: true};
-    case 'begin': return still({id: 'opening', component: OpeningSeg, dur: frames(OPENING_DUR), props: {}});
-    case 'hub': case 'notebook': return null;
-    case 'st': {
-      const seg = sc.step === 'clues' ? 'intro' : sc.step === 'choice' ? 'rewind' : sc.step === 'wrongDone' ? 'wrong' : sc.step;
-      const props = {si: sc.si, seg, found, zoom, choice: sc.choice ?? 0, count: done.length};
-      const auto = sc.step === 'intro' || sc.step === 'rewind' || sc.step === 'wrong' || sc.step === 'right';
-      return {id: `st${sc.si}-${seg}-${sc.choice ?? ''}`, component: StationSeg, dur: frames(stationSegDur(sc.si, seg as any)), props, autoPlay: auto};
-    }
-    case 'revealA': return {id: 'revealA', component: RevealASeg, dur: frames(REVEAL_A), props: {}, autoPlay: true};
-    case 'reflect': return still({id: 'revealA', component: RevealASeg, dur: frames(REVEAL_A), props: {}});
-    case 'revealB': return {id: 'revealB', component: RevealBSeg, dur: frames(REVEAL_B), props: {}, autoPlay: true};
-    case 'finish': return still({id: 'revealB', component: RevealBSeg, dur: frames(REVEAL_B), props: {}});
-    case 'outro': return {id: 'outro', component: OutroSeg, dur: frames(DUR.outro - 0.5), props: {}, autoPlay: true};
-    case 'end': return still({id: 'outro', component: OutroSeg, dur: frames(DUR.outro - 0.5), props: {}});
+    case 'opening': return {id: 'opening', component: OpeningSeg, dur: f(OPENING_DUR), autoPlay: true};
+    case 'begin': return still({id: 'opening', component: OpeningSeg, dur: f(OPENING_DUR)});
+    case 'revealA': return {id: 'revealA', component: RevealASeg, dur: f(REVEAL_A), autoPlay: true};
+    case 'reflect': return still({id: 'revealA', component: RevealASeg, dur: f(REVEAL_A)});
+    case 'revealB': return {id: 'revealB', component: RevealBSeg, dur: f(REVEAL_B), autoPlay: true};
+    case 'finish': return still({id: 'revealB', component: RevealBSeg, dur: f(REVEAL_B)});
+    case 'outro': return {id: 'outro', component: OutroSeg, dur: f(DUR.outro - 0.5), autoPlay: true};
+    case 'end': return still({id: 'outro', component: OutroSeg, dur: f(DUR.outro - 0.5)});
+    default: return null;
   }
 }
 
-/* ---------------- 1920x1080 stage scaled to the window ---------------- */
 const useScale = (ref: React.RefObject<HTMLDivElement>) => {
   const [s, setS] = useState(0.5);
   useLayoutEffect(() => {
@@ -54,10 +48,9 @@ const useScale = (ref: React.RefObject<HTMLDivElement>) => {
 
 const App: React.FC = () => {
   const [sc, setSc] = useState<Screen>({k: 'start'});
-  const [done, setDone] = useState<number[]>([]);
-  const [found, setFound] = useState<number[]>([]);
-  const [zoom, setZoom] = useState(false);
-  const [missed, setMissed] = useState<number | null>(null);
+  const [restored, setRestored] = useState<number[]>([]);
+  const [missed, setMissed] = useState<number[]>([]);
+  const [miss, setMiss] = useState<{x: number; y: number} | null>(null);
   const [fills, setFills] = useState<(string | null)[]>(FILL.map(() => null));
   const [shake, setShake] = useState<string | null>(null);
   const [answer, setAnswer] = useState('');
@@ -65,122 +58,144 @@ const App: React.FC = () => {
   const player = useRef<PlayerRef>(null);
   const box = useRef<HTMLDivElement>(null);
   const scale = useScale(box);
-  const seg = segmentFor(sc, done, found, zoom);
+  const seg = segmentFor(sc);
+  const timers = useRef<number[]>([]);
+  const later = (ms: number, fn: () => void) => timers.current.push(window.setTimeout(fn, ms));
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
-  // what happens when a playing segment reaches its end
-  const onEnded = () => {
-    setSc((cur) => {
-      switch (cur.k) {
-        case 'opening': return {k: 'begin'};
-        case 'st':
-          if (cur.step === 'intro') return {...cur, step: 'clues'};
-          if (cur.step === 'rewind') return {...cur, step: 'choice'};
-          if (cur.step === 'wrong') return {...cur, step: 'wrongDone'};
-          if (cur.step === 'right') return {k: 'hub'};
-          return cur;
-        case 'revealA': return {k: 'reflect'};
-        case 'revealB': return {k: 'finish'};
-        case 'outro': return {k: 'end'};
-        default: return cur;
-      }
-    });
-  };
+  const onEnded = () => setSc((cur) => {
+    switch (cur.k) {
+      case 'opening': return {k: 'begin'};
+      case 'revealA': return {k: 'reflect'};
+      case 'revealB': return {k: 'finish'};
+      case 'outro': return {k: 'end'};
+      default: return cur;
+    }
+  });
   useEffect(() => {
     const p = player.current; if (!p) return;
     p.addEventListener('ended', onEnded);
     if (seg && !seg.autoPlay) p.seekTo(seg.dur - 1);
     return () => p.removeEventListener('ended', onEnded);
   }, [seg?.id, seg?.autoPlay]);
-  useEffect(() => {if (sc.k === 'st' && sc.step === 'right') setDone((d) => (d.includes(sc.si) ? d : [...d, sc.si]));}, [sc]);
 
   const start = () => {
     sfx('click');
-    if (!music.current) {music.current = new Audio(asset('audio/music.mp3')); music.current.loop = true; music.current.volume = 0.25;}
+    if (!music.current) {music.current = new Audio(asset('audio/music.mp3')); music.current.loop = true; music.current.volume = 0.22;}
     music.current.currentTime = 0; music.current.play().catch(() => {});
-    setDone([]); setFills(FILL.map(() => null)); setAnswer('');
+    setRestored([]); setFills(FILL.map(() => null)); setAnswer('');
     setSc({k: 'opening'});
   };
-  const openStation = (si: number) => {sfx('click'); setFound([]); setZoom(false); setMissed(null); setSc({k: 'st', si, step: 'intro'});};
-  const clickClue = (i: number) => {
-    if (sc.k !== 'st') return;
-    if (!found.includes(i)) {sfx('pop'); setFound([...found, i]);}
-    if (ST[sc.si].lens && i === 2) {sfx('zoom'); setZoom(true);}
+
+  /* ---- the hunt ---- */
+  const hunt = sc.k === 'hunt' ? sc : null;
+  const v = hunt && hunt.v !== null ? VIOL[hunt.v] : null;
+  const zoomed = !!(hunt && hunt.v !== null && hunt.step !== 'fly');
+  const pick = (i: number) => {
+    if (!hunt || hunt.v !== null || restored.includes(i)) return;
+    sfx('pop'); sfx('zoom', 0.5); setMissed([]); setMiss(null);
+    setSc({k: 'hunt', v: i, step: 'zoom'});
+    later(850, () => {sfx('swish'); setSc({k: 'hunt', v: i, step: 'question'});});
+  };
+  const missClick = (e: React.MouseEvent) => {
+    if (!hunt || hunt.v !== null) return;
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setMiss({x: (e.clientX - r.left) / scale, y: (e.clientY - r.top) / scale}); sfx('tick', 0.4);
+    later(1300, () => setMiss(null));
   };
   const choose = (i: number) => {
-    if (sc.k !== 'st') return;
+    if (!hunt || hunt.v === null || !v) return;
     sfx('click');
-    if (i === 1) setSc({...sc, step: 'right'});
-    else {setMissed(i); setSc({...sc, step: 'wrong', choice: i});}
+    if (i !== v.correct) {sfx('wrong', 0.6); setMissed((m) => [...m, i]); setSc({...hunt, step: 'wrong', choice: i}); return;}
+    const vi = hunt.v;
+    sfx('success'); setSc({k: 'hunt', v: vi, step: 'right'});
+    later(1700, () => {sfx('page'); setSc({k: 'hunt', v: vi, step: 'page'});});
+    later(5300, () => {sfx('swish'); setSc({k: 'hunt', v: vi, step: 'fly'});});
+    later(6100, () => {sfx('chime'); setRestored((r) => [...r, vi]); setSc({k: 'hunt', v: null});});
   };
   const pickWord = (row: number, w: string) => {
     if (fills[row]) return;
     if (w === FILL[row][1]) {sfx('ding'); const f = [...fills]; f[row] = w; setFills(f);}
-    else {sfx('wrong', 0.5); setShake(`${row}:${w}`); setTimeout(() => setShake(null), 450);}
+    else {sfx('wrong', 0.5); setShake(`${row}:${w}`); later(450, () => setShake(null));}
   };
-
-  const st = sc.k === 'st' ? ST[sc.si] : null;
-  const allDone = done.length === ST.length;
+  const allDone = restored.length === VIOL.length;
 
   return (
     <div className="wrap" dir="rtl" lang="ar">
       <style>{CSS + APP_CSS}</style>
       <div className="box" ref={box}>
-        {/* the Player's own layout must stay LTR (an RTL parent shifts its scaled canvas); scenes set dir="rtl" themselves */}
-        {seg && <div dir="ltr" className="playerbox"><Player key={seg.id + (seg.autoPlay ? '-play' : '-still')} ref={player} component={seg.component as any} inputProps={seg.props}
+        {seg && <div dir="ltr" className="playerbox"><Player key={seg.id + (seg.autoPlay ? '-play' : '-still')} ref={player} component={seg.component as any} inputProps={{}}
           durationInFrames={seg.dur} compositionWidth={1920} compositionHeight={1080} fps={FPS}
           autoPlay={seg.autoPlay} initialFrame={seg.autoPlay ? 0 : seg.dur - 1} controls={false} clickToPlay={false}
           numberOfSharedAudioTags={12} acknowledgeRemotionLicense style={{width: '100%', height: '100%'}} /></div>}
 
-        {/* every interactive control lives in this 1920x1080 layer, scaled with the video */}
         <div className="ui stage" style={{transform: `scale(${scale})`}}>
 
           {sc.k === 'start' && <div className="full bgdark center-col">
             <div className="h1" style={{fontSize: 140}}>لغز المختبر</div>
             <div className="h2 amber" style={{fontSize: 80}}>الصفحات المفقودة</div>
-            <div className="h3 mint" style={{margin: '20px 0 60px'}}>اكتشفي القانون … أعيدي الصفحة</div>
+            <div className="h3 mint" style={{margin: '20px 0 60px'}}>لاحظي المخالفة … وأعيدي الصفحة إلى كتيّب السلامة</div>
             <button className="btn big" onClick={start}>▶ ابدئي</button>
             <div className="credits">{TEAM.join(' · ')} — بإشراف {SUPERVISOR}</div>
           </div>}
 
-          {sc.k === 'begin' && <div className="bottom"><button className="btn big pulse" onClick={() => {sfx('click'); setSc({k: 'hub'});}}>ابدئي التحقيق</button></div>}
+          {sc.k === 'begin' && <div className="bottom"><button className="btn big pulse" onClick={() => {sfx('click'); setSc({k: 'hunt', v: null});}}>ابدئي التحقيق</button></div>}
 
-          {sc.k === 'hub' && <div className="full bgdark">
-            <div className="center h2" style={{top: 60, fontSize: 62}}>دفتر قوانين السلامة</div>
-            <div className="nb">
-              <div className="spine" />
-              {ST.map((s, i) => {const col = i < 3 ? 0 : 1, row = i < 3 ? i : i - 3, ok = done.includes(i);
-                return <button key={i} className={'slotbtn' + (ok ? ' ok' : '')} disabled={ok} onClick={() => openStation(i)}
-                  style={{left: col === 0 ? 760 : 80, top: 50 + row * 190}}>
-                  <span className="num">{ok ? '✓' : ar(s.n)}</span>
-                  <span><b>{s.name}</b><small>{ok ? s.law : 'صفحة مفقودة… انقري للتحقيق'}</small></span>
-                </button>;})}
-              <div className="count">الصفحات المستعادة {ar(done.length)} / ٥</div>
+          {/* ===== the violation hunt ===== */}
+          {hunt && <div className="full scene" onClick={missClick}>
+            <div className="zoomer" style={{transform: v && zoomed ? zoomTransform(v.focus, 1) : 'none'}}>
+              <img src={asset('cards/scene_freeze.jpg')} width={1920} height={1080} alt="مشهد المختبر" draggable={false} />
+              {VIOL.map((w, i) => restored.includes(i) && <FoundMark key={i} v={w} />)}
+              {v && v.spots.map((s, k) => <div key={k} className="pin" style={{left: s.x, top: s.y, zIndex: 8}}><div className="ring" style={{width: s.r * 2, height: s.r * 2}} /></div>)}
+              {hunt.v === null && VIOL.map((w, i) => !restored.includes(i) && w.spots.map((s, k) =>
+                <button key={`${i}-${k}`} className="hspot" aria-label={`مخالفة ${ar(i + 1)}`} style={{left: s.x - s.r, top: s.y - s.r, width: s.r * 2, height: s.r * 2}}
+                  onClick={(e) => {e.stopPropagation(); pick(i);}} />))}
             </div>
-            <div className="center" style={{top: 900}}>
-              {allDone ? <button className="btn big pulse" onClick={() => {sfx('click'); setSc({k: 'notebook'});}}>افتحي «دفتري»</button>
-                : <span className="pill" style={{fontSize: 36}}>{done.length ? 'اختاري الصفحة التالية' : 'ابدئي بأي صفحة'}</span>}
-            </div>
+            {miss && <div className="pin" style={{left: miss.x, top: miss.y, zIndex: 30}}><div className="missnote">ليست مخالفة… ابحثي مرة أخرى</div></div>}
+          </div>}
+          {hunt && <HuntBar restored={restored} />}
+          {hunt && hunt.v === null && !allDone && <div className="hint-bar">لاحظي المخالفات في المشهد وانقري عليها ({ar(restored.length)} / ٥)</div>}
+          {hunt && hunt.v === null && allDone && <div className="full" style={{background: 'rgba(6,23,30,.55)', zIndex: 35}}>
+            <div className="center" style={{top: 380}}><div className="fbin" style={{fontSize: 56}}>اكتشفتِ المخالفات الخمس، واستعدتِ صفحات الكتيّب!</div></div>
+            <div className="center" style={{top: 560}}><button className="btn big pulse" onClick={() => {sfx('click'); setSc({k: 'notebook'});}}>افتحي «دفتري»</button></div>
           </div>}
 
-          {sc.k === 'st' && sc.step === 'clues' && st && <>
-            <div className="hint-bar">انقري على ما يبدو غير سليم في المشهد ({ar(found.length)} / ٣)</div>
-            {st.clues.map((c, i) => <button key={i} className="hot" aria-label={c[0]} style={{left: c[1] - 190, top: c[2] - 165}} onClick={() => clickClue(i)} />)}
-            {zoom && <button className="closezoom" onClick={() => {sfx('click'); setZoom(false);}}>✕ إغلاق العدسة</button>}
-            {found.length === st.clues.length && !zoom && <div className="bottom"><button className="btn big pulse" onClick={() => {sfx('click'); setSc({...sc, step: 'rewind'});}}>◀◀ أعيدي الشريط: ماذا حدث؟</button></div>}
-          </>}
+          {v && hunt && hunt.step !== 'fly' && <div className="center" style={{top: 130, zIndex: 21}}>
+            <span className="chip" style={{fontSize: 36}}><span style={{color: 'var(--amber)', fontWeight: 900}}>مخالفة:</span>&nbsp; {v.label}</span></div>}
 
-          {sc.k === 'st' && sc.step === 'choice' && st && <div className="full" style={{background: 'rgba(6,23,30,.8)'}}>
-            <div className="center h2" style={{top: 170, fontSize: 64}}>ماذا تفعلين؟</div>
-            {st.opts.map((o, i) => <button key={i} className={'optbtn' + (missed === i ? ' missed' : '')} style={{left: [1270, 700, 130][i]}} onClick={() => choose(i)}>
-              <span className="let">{['أ', 'ب', 'ج'][i]}</span>{o}</button>)}
+          {v && hunt && (hunt.step === 'question' || hunt.step === 'wrong' || hunt.step === 'right') && <div className="full" style={{background: 'linear-gradient(180deg,rgba(6,23,30,0) 30%,rgba(6,23,30,.92) 58%)', zIndex: 24}}>
+            <div className="center h2" style={{top: 560, fontSize: 56}}>ماذا تفعلين؟</div>
+            {v.opts.map((o, i) => {const good = hunt.step === 'right' && i === v.correct, bad = hunt.step === 'wrong' && hunt.choice === i;
+              return <button key={i} className={'optbtn' + (missed.includes(i) && !bad ? ' missed' : '') + (good ? ' good' : '') + (bad ? ' bad' : '')}
+                style={{left: OPT_LEFT[i], top: 660}} disabled={hunt.step !== 'question'} onClick={() => choose(i)}>
+                <span className="let">{['أ', 'ب', 'ج'][i]}</span>{o}</button>;})}
           </div>}
 
-          {sc.k === 'st' && sc.step === 'wrongDone' && <div className="bottom" style={{top: 940}}>
-            <button className="btn big" onClick={() => {sfx('click'); setSc({...(sc as any), step: 'choice'});}}>أعيدي المحاولة</button></div>}
+          {v && hunt && hunt.step === 'wrong' && <div className="full" style={{zIndex: 30, background: 'rgba(226,88,76,.12)'}}>
+            <div className="center" style={{top: 230}}>
+              <div className="conscard">
+                <div style={{fontSize: 50, fontWeight: 900, color: '#ffb3ab'}}>لنرَ ما سيحدث…</div>
+                <div style={{fontSize: 36, fontWeight: 700, marginTop: 6}}>{v.cons[hunt.choice ?? -1]}</div>
+                <div style={{fontSize: 32, fontWeight: 700, marginTop: 12, color: 'var(--amber)'}}>{v.hint}</div>
+                <button className="btn" style={{marginTop: 26}} onClick={() => {sfx('click'); setSc({...hunt, step: 'question'});}}>أعيدي المحاولة</button>
+              </div></div></div>}
 
+          {v && hunt && hunt.step === 'right' && <div className="center" style={{top: 300, zIndex: 27}}>
+            <div className="fbin">قرار موفّق!</div><div className="fbsub">{v.why}</div></div>}
+
+          {v && hunt && (hunt.step === 'page' || hunt.step === 'fly') && <>
+            <div className="full" style={{background: 'rgba(6,23,30,.85)', zIndex: 30, opacity: hunt.step === 'fly' ? 0 : 1, transition: 'opacity .6s'}} />
+            <div className={'page apppage' + (hunt.step === 'fly' ? ' fly' : '')}
+              style={{zIndex: 31, ...(hunt.step === 'fly' ? {transform: `translate(${tabCenter(v.n - 1).x - 960}px,${tabCenter(v.n - 1).y - 450}px) scale(.12)`, opacity: 0} : {})}}>
+              <div className="num">كتيّب السلامة · الصفحة {ar(v.n)} ✓</div>
+              <div className="lt">{v.title}</div>
+              <div className="law">{v.text}</div>
+            </div></>}
+
+          {/* ===== دفتري ===== */}
           {sc.k === 'notebook' && <div className="full bgdark">
             <div className="center h2" style={{top: 40, fontSize: 62}}>دفتري</div>
-            <div className="center h3 mint" style={{top: 130, fontSize: 34}}>أكملي القوانين الخمسة باختيار الكلمة المناسبة</div>
+            <div className="center h3 mint" style={{top: 130, fontSize: 34}}>أكملي تعليمات السلامة الخمس باختيار الكلمة المناسبة</div>
             <div className="paper">
               {FILL.map((f, i) => <div key={i} className="row">
                 <span className="n">{ar(i + 1)}</span>
@@ -196,7 +211,7 @@ const App: React.FC = () => {
             <div className="reflect card">
               <div className="mint-d">سؤال للتأمل</div>
               <div className="q">ماذا كنتِ ستفعلين في مكان سلمى؟</div>
-              <textarea value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="اكتبي إجابتكِ هنا…" />
+              <textarea id="reflection" value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="اكتبي إجابتكِ هنا…" />
               <button className="btn" onClick={() => {sfx('click'); setSc({k: 'revealB'});}}>متابعة</button>
             </div></div>}
 
@@ -216,34 +231,37 @@ const APP_CSS = `
 html,body,#root{margin:0;height:100%;background:#06171e;overflow:hidden}
 .wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-family:Cairo,Tajawal,sans-serif}
 .box{position:relative;width:min(100vw,calc(100vh*16/9));aspect-ratio:16/9;background:radial-gradient(ellipse at 50% 40%,#123f4a,#0a2530 55%,#06171e);overflow:hidden}
+.playerbox{position:absolute;inset:0;direction:ltr}
 .ui{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;pointer-events:none;color:#fff}
 .ui button,.ui textarea,.ui .full{pointer-events:auto}
 .full{position:absolute;inset:0}
-.playerbox{position:absolute;inset:0;direction:ltr}
 .bgdark{background:radial-gradient(ellipse at 50% 40%,#123f4a 0%,#0a2530 55%,#06171e 100%)}
 .center-col{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .credits{position:absolute;bottom:50px;font-size:28px;color:#bfe9df;opacity:.8}
 button{font-family:inherit;cursor:pointer;border:0}
+button:focus-visible{outline:4px solid #f4ab3c;outline-offset:4px}
 .btn.big{font-size:48px;padding:22px 70px}
 .btn:hover{filter:brightness(1.07)} .btn:active{transform:translateY(4px);box-shadow:0 6px 0 #b9761d}
 .pulse{animation:pulse 1.4s ease-in-out infinite} @keyframes pulse{50%{transform:scale(1.05)}}
 .bottom{position:absolute;left:0;right:0;top:880px;text-align:center}
-.nb{position:absolute;left:260px;top:180px;width:1400px;height:640px;border-radius:30px;background:var(--paper);box-shadow:0 30px 80px rgba(0,0,0,.5);color:var(--ink)}
-.nb .spine{position:absolute;left:698px;top:0;bottom:0;width:4px;background:rgba(18,115,105,.35)}
-.slotbtn{position:absolute;width:560px;height:160px;border:4px dashed #b7cfc9;border-radius:20px;display:flex;align-items:center;gap:26px;padding:0 30px;background:transparent;color:var(--ink);text-align:right;transition:.2s}
-.slotbtn:hover:not(:disabled){border-color:#f4ab3c;background:rgba(244,171,60,.12);transform:scale(1.03)}
-.slotbtn .num{width:90px;height:90px;flex:none;border-radius:50%;background:#e3f1ed;color:var(--teal);font-size:48px;font-weight:900;display:flex;align-items:center;justify-content:center}
-.slotbtn b{display:block;font-size:38px;font-weight:900} .slotbtn small{display:block;font-size:24px;font-weight:700;color:var(--red)}
-.slotbtn.ok{border:4px solid var(--teal2);background:var(--teal);color:#fff;cursor:default} .slotbtn.ok .num{background:#fff;color:var(--teal)} .slotbtn.ok small{color:var(--mint)}
-.nb .count{position:absolute;left:80px;top:440px;width:560px;height:160px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:var(--teal)}
-.hint-bar{position:absolute;left:50%;top:116px;transform:translateX(-50%);white-space:nowrap;padding:10px 36px;border-radius:999px;background:rgba(10,37,48,.88);border:2px solid var(--amber);font-size:34px;font-weight:900;color:#fff}
-.hot{position:absolute;width:380px;height:330px;border-radius:22px;background:transparent;cursor:${MAG_CURSOR}}
-.hot:hover{box-shadow:0 0 0 4px rgba(244,171,60,.6) inset}
-.closezoom{position:absolute;left:840px;top:840px;padding:12px 34px;border-radius:999px;background:#fff;color:var(--ink);font-size:30px;font-weight:900}
-.optbtn{position:absolute;top:330px;width:520px;min-height:360px;padding:30px 34px;border-radius:30px;background:#fff;color:var(--ink);font-size:32px;font-weight:700;line-height:1.5;text-align:right;border:6px solid transparent;transition:.15s}
-.optbtn:hover{border-color:var(--amber);transform:translateY(-8px)}
+.scene{overflow:hidden;cursor:${MAG_CURSOR}}
+.zoomer{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;transition:transform .85s cubic-bezier(.65,0,.35,1)}
+.zoomer img{display:block;width:1920px;height:1080px;user-select:none}
+.hspot{position:absolute;border-radius:50%;background:transparent;cursor:${MAG_CURSOR};z-index:6}
+
+.missnote{white-space:nowrap;background:rgba(10,37,48,.9);border:2px solid #bfe9df;color:#fff;padding:8px 22px;border-radius:999px;font-size:28px;font-weight:700;animation:fadeup 1.3s forwards}
+@keyframes fadeup{0%{opacity:0;transform:translateY(10px)}15%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
+.hint-bar{position:absolute;left:50%;top:116px;transform:translateX(-50%);white-space:nowrap;padding:10px 36px;border-radius:999px;background:rgba(10,37,48,.88);border:2px solid var(--amber);font-size:34px;font-weight:900;color:#fff;z-index:20}
+.optbtn{position:absolute;width:520px;min-height:300px;padding:30px 34px;border-radius:30px;background:#fff;color:var(--ink);font-size:30px;font-weight:700;line-height:1.5;text-align:right;border:6px solid transparent;transition:.15s;animation:optin .45s backwards}
+.optbtn:nth-child(3){animation-delay:.12s} .optbtn:nth-child(4){animation-delay:.24s}
+@keyframes optin{from{opacity:0;transform:translateY(50px)}}
+.optbtn:hover:not(:disabled){border-color:var(--amber);transform:translateY(-8px)}
 .optbtn .let{width:66px;height:66px;border-radius:50%;background:var(--ink2);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:36px;margin-bottom:14px}
-.optbtn.missed{opacity:.55}
+.optbtn.missed{opacity:.5} .optbtn.good{border-color:var(--green);box-shadow:0 0 0 10px rgba(53,179,122,.35)} .optbtn.bad{border-color:var(--red);box-shadow:0 0 0 10px rgba(226,88,76,.3)}
+.optbtn:disabled{cursor:default}
+.conscard{display:inline-block;max-width:1500px;background:rgba(10,37,48,.95);padding:24px 50px 30px;border-radius:24px;border:3px solid var(--red)}
+.apppage{animation:pagein .6s cubic-bezier(.34,1.56,.64,1)} .apppage.fly{transition:transform .75s ease-in,opacity .75s ease-in}
+@keyframes pagein{from{opacity:0;transform:translateY(-200px) rotate(-12deg) scale(.4)}}
 .paper{position:absolute;left:160px;top:210px;width:1600px;height:720px;background:var(--paper);color:var(--ink);border-radius:18px;padding:30px 60px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
 .paper .row{display:flex;align-items:center;gap:20px;height:132px;border-bottom:2px solid rgba(18,115,105,.15)}
 .paper .n{width:54px;height:54px;flex:none;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900}
@@ -258,6 +276,7 @@ button{font-family:inherit;cursor:pointer;border:0}
 .reflect{position:absolute;left:360px;top:180px;width:1200px;padding:50px 70px;text-align:center}
 .reflect .mint-d{color:var(--teal);font-size:34px;font-weight:900} .reflect .q{font-size:64px;font-weight:900;margin:10px 0 30px}
 .reflect textarea{width:100%;height:220px;border-radius:20px;border:3px solid #b7cfc9;padding:20px 26px;font-family:inherit;font-size:34px;resize:none;margin-bottom:30px;direction:rtl}
+@media (prefers-reduced-motion: reduce){.pulse,.optbtn,.apppage{animation:none}.zoomer,.apppage.fly{transition:none}}
 `;
 
 createRoot(document.getElementById('root')!).render(<App />);

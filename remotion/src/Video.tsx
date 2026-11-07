@@ -1,15 +1,14 @@
 import React from 'react';
 import {AbsoluteFill, Audio, Series, interpolate, staticFile, useVideoConfig} from 'remotion';
 import {BG, CSS} from './components';
-import {DUR, Hub, Intro, Mission, Notebook, Outro, Reveal} from './Scenes';
-import {Station, stationDuration} from './Station';
+import {DUR, Intro, Mission, Notebook, Outro, Reveal} from './Scenes';
+import {HUNT_DUR, HuntDemo} from './Hunt';
 
 type Item = {key: string; dur: number; el: React.ReactNode};
 export const TIMELINE: Item[] = [
   {key: 'intro', dur: DUR.intro, el: <Intro />},
   {key: 'mission', dur: DUR.mission, el: <Mission />},
-  {key: 'hub', dur: DUR.hub, el: <Hub />},
-  ...[0, 1, 2, 3, 4].map((i) => ({key: 'st' + (i + 1), dur: stationDuration(i), el: <Station si={i} />})),
+  {key: 'hunt', dur: HUNT_DUR, el: <HuntDemo />},
   {key: 'notebook', dur: DUR.notebook, el: <Notebook />},
   {key: 'reveal', dur: DUR.reveal, el: <Reveal />},
   {key: 'outro', dur: DUR.outro, el: <Outro />},

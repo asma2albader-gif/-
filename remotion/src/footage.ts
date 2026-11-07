@@ -5,7 +5,7 @@
  * See SHOT_LIST.md for what to film in each clip and the minimum length.
  */
 export const FOOTAGE: Record<string, string | null> = {
-  mission: 'real_mission.mp4', // طالبة تبحث في المختبر (Mixkit #21457)
+  mission: 'scene_all.mp4', // من Gemini: الطالبة تدخل المختبر بحقيبتها وقهوتها (مشهد المخالفات الخمس)
   st1: null,          // المحطة ١ (الباب): المشهد كما وُجد
   st1_rewind: null,   // المحطة ١: ما فعلته سلمى (لقطة إعادة الشريط)
   st1_wrong: null,    // المحطة ١: نتيجة القرار غير المناسب (انسكاب الشراب)

@@ -1,12 +1,12 @@
 // All on-screen text, taken from the Phase 2 flowchart & multimedia blueprint document.
 export const TITLE = 'لغز المختبر';
 export const SUBTITLE = 'الصفحات المفقودة';
-export const TAGLINE = 'اكتشفي القانون … أعيدي الصفحة';
+export const TAGLINE = 'لاحظي المخالفة … وأعيدي الصفحة إلى كتيّب السلامة';
 export const PHASE = 'المرحلة الثانية · بناء مخطط المنتج والتفاعل';
 export const TEAM = ['أسماء البدر', 'لينا المانع', 'فنون السواط', 'مها العجمي'];
 export const SUPERVISOR = 'الدكتورة خولة الدويش';
 export const MISSION =
-  '«وجدنا دفتر السلامة وقد سقطت منه خمس صفحات، وسيصل الطلاب الجدد قريبًا. ساعديني في استعادتها.»';
+  '«وجدنا كتيّب تعليمات السلامة وقد سقطت منه خمس صفحات، وسيصل الطلاب الجدد قريبًا. لاحظي المخالفات في المختبر؛ فكل مخالفة تكتشفينها تعيد صفحة إلى الكتيّب.»';
 
 export type Clue = [label: string, x: number, y: number, chipDy?: number];
 export type Station = {
@@ -49,7 +49,7 @@ export const FILL: Array<[string, string, string]> = [
   ['أُبعد الوصلات الكهربائية عن', 'الماء', '.'], ['لا تُنظَّف مادة مجهولة قبل', 'معرفة نوعها', '.'],
   ['لا ألمس الزجاج المكسور', 'بيدي', '.'],
 ];
-export const WHAT = ['شربت داخل المختبر', 'تركت حقيبتها', 'مدّت الوصلة', 'مسحت دون أن تقرأ', 'جمعت الزجاج بيدها'];
+export const WHAT = ['شربت قهوة بلا وقاية', 'تركت حقيبتها في الممر', 'مدّت الوصلة قرب السائل', 'تركت المادة المنسكبة', 'تركت الزجاج المكسور'];
 
 /** Station timing (seconds, local to the station scene). */
 export function stationTimes(s: Station) {
