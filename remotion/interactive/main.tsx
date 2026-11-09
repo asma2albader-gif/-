@@ -12,7 +12,8 @@ import {FPS, OPENING_DUR, OpeningSeg, OutroSeg, REVEAL_A, REVEAL_B, RevealASeg, 
 import {DUR} from '../src/Scenes';
 import {FoundMark, HuntBar, OPT_LEFT, VIOL, tabCenter, zoomTransform} from '../src/Hunt';
 
-const sfx = (name: string, vol = 0.7) => {try {const a = new Audio(asset(`audio/sfx/${name}.wav`)); a.volume = vol; a.play().catch(() => {});} catch {}};
+let MUTED = false;
+const sfx = (name: string, vol = 0.7) => {if (MUTED) return; try {const a = new Audio(asset(`audio/sfx/${name}.wav`)); a.volume = vol; a.play().catch(() => {});} catch {}};
 
 type Step = 'zoom' | 'question' | 'wrong' | 'right' | 'page' | 'fly';
 type Screen =
@@ -54,6 +55,10 @@ const App: React.FC = () => {
   const [fills, setFills] = useState<(string | null)[]>(FILL.map(() => null));
   const [shake, setShake] = useState<string | null>(null);
   const [answer, setAnswer] = useState('');
+  const [muted, setMuted] = useState(false);
+  const [hint, setHint] = useState<string | null>(null);
+  const [hintsUsed, setHintsUsed] = useState(0);
+  const [firstTry, setFirstTry] = useState(0);
   const music = useRef<HTMLAudioElement | null>(null);
   const player = useRef<PlayerRef>(null);
   const box = useRef<HTMLDivElement>(null);
@@ -62,6 +67,18 @@ const App: React.FC = () => {
   const timers = useRef<number[]>([]);
   const later = (ms: number, fn: () => void) => timers.current.push(window.setTimeout(fn, ms));
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
+
+  useEffect(() => {
+    MUTED = muted;
+    if (music.current) music.current.muted = muted;
+    const p = player.current; if (p) (muted ? p.mute() : p.unmute());
+  }, [muted, seg?.id]);
+  const showHint = () => {
+    const i = VIOL.findIndex((_, k) => !restored.includes(k));
+    if (i < 0) return;
+    sfx('ding', 0.5); setHintsUsed((h) => h + 1); setHint(VIOL[i].where);
+    later(4500, () => setHint(null));
+  };
 
   const onEnded = () => setSc((cur) => {
     switch (cur.k) {
@@ -83,7 +100,7 @@ const App: React.FC = () => {
     sfx('click');
     if (!music.current) {music.current = new Audio(asset('audio/music.mp3')); music.current.loop = true; music.current.volume = 0.22;}
     music.current.currentTime = 0; music.current.play().catch(() => {});
-    setRestored([]); setFills(FILL.map(() => null)); setAnswer('');
+    setRestored([]); setFills(FILL.map(() => null)); setAnswer(''); setHintsUsed(0); setFirstTry(0); setHint(null);
     setSc({k: 'opening'});
   };
 
@@ -108,6 +125,7 @@ const App: React.FC = () => {
     sfx('click');
     if (i !== v.correct) {sfx('wrong', 0.6); setMissed((m) => [...m, i]); setSc({...hunt, step: 'wrong', choice: i}); return;}
     const vi = hunt.v;
+    if (missed.length === 0) setFirstTry((n) => n + 1);
     sfx('success'); setSc({k: 'hunt', v: vi, step: 'right'});
     later(1700, () => {sfx('page'); setSc({k: 'hunt', v: vi, step: 'page'});});
     later(5300, () => {sfx('swish'); setSc({k: 'hunt', v: vi, step: 'fly'});});
@@ -136,6 +154,15 @@ const App: React.FC = () => {
             <div className="h2 amber" style={{fontSize: 80}}>الصفحات المفقودة</div>
             <div className="h3 mint" style={{margin: '20px 0 60px'}}>لاحظي المخالفة … وأعيدي الصفحة إلى كتيّب السلامة</div>
             <button className="btn big" onClick={start}>▶ ابدئي</button>
+            <div className="howto">
+              <div className="howto-t">كيف تلعبين؟</div>
+              <ol>
+                <li>شاهدي المختبر، ولاحظي ما يخالف تعليمات السلامة، ثم انقري عليه.</li>
+                <li>أجيبي عن سؤال المخالفة؛ القرار الصحيح يعيد صفحة إلى كتيّب السلامة.</li>
+                <li>اكتشفي المخالفات الخمس، ثم أكملي «دفتري» وسؤال التأمل.</li>
+              </ol>
+              <div className="howto-s">مدة التجربة ٥–١٠ دقائق تقريبًا · الصوت مفيد وغير ضروري · زر «تلميح» متاح إن احتجتِ</div>
+            </div>
             <div className="credits">{TEAM.join(' · ')} — بإشراف {SUPERVISOR}</div>
           </div>}
 
@@ -155,6 +182,8 @@ const App: React.FC = () => {
           </div>}
           {hunt && <HuntBar restored={restored} />}
           {hunt && hunt.v === null && !allDone && <div className="hint-bar">لاحظي المخالفات في المشهد وانقري عليها ({ar(restored.length)} / ٥)</div>}
+          {hunt && hunt.v === null && !allDone && <button className="hintbtn" onClick={showHint}>💡 تلميح</button>}
+          {hint && hunt && hunt.v === null && <div className="center" style={{top: 215, zIndex: 36}}><span className="hinttoast">{hint}</span></div>}
           {hunt && hunt.v === null && allDone && <div className="full" style={{background: 'rgba(6,23,30,.55)', zIndex: 35}}>
             <div className="center" style={{top: 380}}><div className="fbin" style={{fontSize: 56}}>اكتشفتِ المخالفات الخمس، واستعدتِ صفحات الكتيّب!</div></div>
             <div className="center" style={{top: 560}}><button className="btn big pulse" onClick={() => {sfx('click'); setSc({k: 'notebook'});}}>افتحي «دفتري»</button></div>
@@ -215,10 +244,18 @@ const App: React.FC = () => {
               <button className="btn" onClick={() => {sfx('click'); setSc({k: 'revealB'});}}>متابعة</button>
             </div></div>}
 
+          {sc.k === 'finish' && <div className="result card">
+            <div className="mint-d">نتيجتكِ</div>
+            <div className="rrow"><span>المخالفات المكتشفة</span><b>{ar(restored.length)} / ٥</b></div>
+            <div className="rrow"><span>قرارات صحيحة من المحاولة الأولى</span><b>{ar(firstTry)} / ٥</b></div>
+            <div className="rrow"><span>التلميحات المستخدمة</span><b>{ar(hintsUsed)}</b></div>
+            <div className="rmsg">{firstTry === 5 ? 'ممتاز! قراراتكِ كلها آمنة من المحاولة الأولى.' : firstTry >= 3 ? 'أحسنتِ! راجعي الصفحات التي احتاجت أكثر من محاولة.' : 'جيد! أعيدي التجربة لتصلي إلى القرار الآمن من المحاولة الأولى.'}</div>
+          </div>}
           {sc.k === 'finish' && <div className="abs" style={{left: 110, width: 900, top: 860, textAlign: 'center'}}>
             <button className="btn big" onClick={() => {sfx('click'); setSc({k: 'outro'});}}>إنهاء</button></div>}
 
           {sc.k === 'end' && <div className="bottom" style={{top: 985}}><button className="btn" style={{fontSize: 30, padding: '10px 40px'}} onClick={start}>↺ العبي من جديد</button></div>}
+          <button className="soundbtn" aria-pressed={muted} aria-label={muted ? 'تشغيل الصوت' : 'كتم الصوت'} onClick={() => setMuted((m) => !m)}>{muted ? '🔇 الصوت متوقف' : '🔊 الصوت يعمل'}</button>
         </div>
       </div>
     </div>
@@ -251,6 +288,18 @@ button:focus-visible{outline:4px solid #f4ab3c;outline-offset:4px}
 
 .missnote{white-space:nowrap;background:rgba(10,37,48,.9);border:2px solid #bfe9df;color:#fff;padding:8px 22px;border-radius:999px;font-size:28px;font-weight:700;animation:fadeup 1.3s forwards}
 @keyframes fadeup{0%{opacity:0;transform:translateY(10px)}15%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
+.howto{margin-top:46px;max-width:1100px;background:rgba(10,37,48,.85);border:2px solid rgba(191,233,223,.35);border-radius:24px;padding:22px 40px;text-align:right}
+.howto-t{font-size:32px;font-weight:900;color:var(--amber);margin-bottom:6px}
+.howto ol{margin:0;padding-inline-start:40px;font-size:28px;line-height:1.7}
+.howto-s{font-size:22px;color:var(--mint);margin-top:8px}
+.soundbtn{position:absolute;left:24px;bottom:20px;z-index:60;pointer-events:auto;padding:8px 22px;border-radius:999px;background:rgba(10,37,48,.85);color:#fff;border:2px solid rgba(191,233,223,.5);font-size:22px;font-weight:700}
+.hintbtn{position:absolute;right:30px;bottom:30px;z-index:36;padding:12px 34px;border-radius:999px;background:#fff;color:var(--ink);font-size:30px;font-weight:900;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.hinttoast{display:inline-block;background:#fff;color:var(--ink);padding:16px 40px;border-radius:20px;font-size:34px;font-weight:700;border-inline-start:12px solid var(--amber);box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.ui .result{position:absolute;left:150px;top:150px;width:820px;padding:34px 50px;text-align:right}
+.result .mint-d{color:var(--teal);font-size:36px;font-weight:900;margin-bottom:10px}
+.result .rrow{display:flex;justify-content:space-between;font-size:32px;font-weight:700;padding:10px 0;border-bottom:2px solid #e3efeb}
+.result .rrow b{color:var(--teal);font-size:36px}
+.result .rmsg{margin-top:16px;font-size:28px;font-weight:700;color:#36515a}
 .hint-bar{position:absolute;left:50%;top:116px;transform:translateX(-50%);white-space:nowrap;padding:10px 36px;border-radius:999px;background:rgba(10,37,48,.88);border:2px solid var(--amber);font-size:34px;font-weight:900;color:#fff;z-index:20}
 .optbtn{position:absolute;width:520px;min-height:300px;padding:30px 34px;border-radius:30px;background:#fff;color:var(--ink);font-size:30px;font-weight:700;line-height:1.5;text-align:right;border:6px solid transparent;transition:.15s;animation:optin .45s backwards}
 .optbtn:nth-child(3){animation-delay:.12s} .optbtn:nth-child(4){animation-delay:.24s}
